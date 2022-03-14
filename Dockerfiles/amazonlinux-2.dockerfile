@@ -33,6 +33,7 @@ RUN yum update -y \
   python3-devel \
   python3-pip \
   rsync \
+  tar \
   unzip \
   wget \
   zlib-devel \
