@@ -25,7 +25,8 @@ jobs:
       # they support.
       matrix:
         dockerfile: [[e4s-ubuntu-18.04, e4s-ubuntu-18.04.dockerfile, 'linux/amd64,linux/ppc64le,linux/arm64'],
-                     [e4s-ubuntu-20.04, e4s-ubuntu-20.04.dockerfile, 'linux/amd64,linux/ppc64le,linux/arm64']]
+                     [e4s-ubuntu-20.04, e4s-ubuntu-20.04.dockerfile, 'linux/amd64,linux/ppc64le,linux/arm64'],
+                     [amazon-linux-2, amazon-linux-2.dockerfile, 'linux/amd64,linux/arm64']]
     name: Build ${{ matrix.dockerfile[0] }}
     steps:
       - name: Checkout
