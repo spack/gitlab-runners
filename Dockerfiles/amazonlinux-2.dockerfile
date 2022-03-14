@@ -1,4 +1,4 @@
-FROM public.ecr.aws/amazonlinux/amazonlinux:latest
+FROM public.ecr.aws/amazonlinux/amazonlinux:2
 
 RUN yum update -y \
  && amazon-linux-extras install -y epel \
@@ -30,6 +30,7 @@ RUN yum update -y \
   patch \
   patchelf \
   pciutils \
+  python3-devel \
   python3-pip \
   rsync \
   unzip \
