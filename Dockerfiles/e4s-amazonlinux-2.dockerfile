@@ -43,6 +43,7 @@ RUN yum update -y \
 
 RUN python3 -m pip install --upgrade pip setuptools wheel \
  && python3 -m pip install gnureadline boto3 pyyaml pytz minio requests clingo \
+ && python3 -m pip install --upgrade 'botocore<=1.23.42' \
  && rm -rf ~/.cache
 
 CMD ["/bin/bash"]
