@@ -36,13 +36,14 @@ RUN yum update -y \
   tar \
   unzip \
   wget \
+  xz \
   zlib-devel \
   && localedef -i en_US -f UTF-8 en_US.UTF-8 \
   && yum clean all \
   && rm -rf /var/cache/yum/*
 
 RUN python3 -m pip install --upgrade pip setuptools wheel \
- && python3 -m pip install gnureadline boto3 pyyaml pytz minio requests clingo \
+ && python3 -m pip install gnureadline 'boto3<=1.20.35' 'botocore<=1.23.46' pyyaml pytz minio requests clingo \
  && rm -rf ~/.cache
 
 CMD ["/bin/bash"]
