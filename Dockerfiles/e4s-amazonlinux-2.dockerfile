@@ -36,6 +36,7 @@ RUN yum update -y \
   tar \
   unzip \
   wget \
+  which \
   xz \
   zlib-devel \
   && localedef -i en_US -f UTF-8 en_US.UTF-8 \
