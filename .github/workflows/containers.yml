@@ -14,7 +14,7 @@ on:
 
 jobs:
   deploy-images:
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     permissions:
       packages: write
     strategy:
