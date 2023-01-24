@@ -1,0 +1,17 @@
+compilers:
+- compiler:
+    spec: clang@14.0.0
+    paths:
+      cc: /usr/bin/clang
+      cxx: /usr/bin/clang++
+      f77: null
+      fc: null
+    flags:
+      cxxflags: '-O3 -g0 -ffunction-sections'
+      cflags: '-O3 -g0 -ffunction-sections'
+      ldflags: '-fuse-ld=lld -Wl,-O3,--icf=safe'
+    operating_system: ubuntu22.04
+    target: x86_64
+    modules: []
+    environment: {}
+    extra_rpaths: []
