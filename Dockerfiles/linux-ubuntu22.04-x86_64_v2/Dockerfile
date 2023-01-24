@@ -40,16 +40,15 @@ RUN spack env create --with-view /root/tools tools && \
     spack -e tools install
 
 
-RUN --mount=type=cache,target=/opt/spack \
-    --mount=type=cache,target=/root/.spack/cache \
+RUN --mount=type=cache,target=/root/.spack/cache \
     spack -e . concretize -f && \
     spack -e . install && \
     spack -e . gc --yes-to-all && \
     spack -e . env view --link run enable /opt/spack/view
 
 # Remove Spack metadata, python cache and static libraries to save some bytes
-#RUN find -L /opt/spack -type d \( -name '__pycache__' -or -name '.spack' \) -exec rm -rf {} + && \
-#    find -L /opt/spack -type f -name '*.a' -exec rm -rf {} +
+RUN find -L /opt/spack -type d \( -name '__pycache__' -or -name '.spack' \) -exec rm -rf {} + && \
+    find -L /opt/spack -type f -name '*.a' -exec rm -rf {} +
 
 # Stage 2, create a small(er) docker image
 FROM ubuntu:22.04
