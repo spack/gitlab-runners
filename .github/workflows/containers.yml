@@ -5,6 +5,9 @@ on:
   # Build container images on a daily schedule
   schedule:
     - cron: '11 5 * * *'
+  push:
+    branches:
+    - main
   pull_request:
     branches:
       - main
