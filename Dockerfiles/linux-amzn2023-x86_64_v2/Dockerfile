@@ -50,9 +50,8 @@ FROM amazonlinux:2023
     
 ENV NVIDIA_VISIBLE_DEVICES=all \
     NVIDIA_DRIVER_CAPABILITIES=compute,utility \
-    LANGUAGE=en_US:en \
-    LANG=en_US.UTF-8 \
-    LC_ALL=en_US.UTF-8 \
+    LANG=C.UTF-8 \
+    LC_ALL=C.UTF-8
     PATH=/opt/spack/view/bin:/root/spack/bin:$PATH
 
 COPY --from=build /opt/spack /opt/spack

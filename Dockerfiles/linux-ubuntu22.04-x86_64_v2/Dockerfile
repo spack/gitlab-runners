@@ -55,9 +55,8 @@ RUN find -L /opt/spack -type d \( -name '__pycache__' -or -name '.spack' \) -exe
 FROM ubuntu:22.04
 
 ENV DEBIAN_FRONTEND=noninteractive \
-    LANGUAGE=en_US:en \
-    LANG=en_US.UTF-8 \
-    LC_ALL=en_US.UTF-8 \
+    LANG=C.UTF-8 \
+    LC_ALL=C.UTF-8
     PATH=/opt/spack/view/bin:/root/spack/bin:$PATH
 
 COPY --from=build /opt/spack /opt/spack
