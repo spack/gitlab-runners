@@ -26,7 +26,7 @@ RUN mkdir spack && \
     curl -Lfs https://github.com/spack/spack/pull/35174.patch | patch -p1 && \
     true
 
-ADD spack.yaml Makefile /root/
+ADD spack.yaml build.mk /root/
 
 ADD linux-amzn2023-x86_64_v2/compilers.yaml linux-amzn2023-x86_64_v2/packages.yaml /root/spack/etc/spack
 
@@ -39,7 +39,7 @@ RUN spack env create --with-view /root/tools tools && \
 RUN --mount=type=cache,target=/buildcache \
     --mount=type=cache,target=/root/.spack/cache \
     spack mirror add cache /buildcache && \
-    make -j$(nproc) BUILDCACHE=/buildcache
+    make -f build.mk -j$(nproc) BUILDCACHE=/buildcache
 
 # Remove Spack metadata / Python cache to save some bytes
 RUN find -L /opt/spack -type d \( -name '__pycache__' -or -name '.spack' \) -exec rm -rf {} + && \

@@ -30,7 +30,8 @@ RUN mkdir spack && \
     curl -Lfs https://github.com/spack/spack/pull/35020.patch | patch -p1 && \
     true
 
-ADD spack.yaml /root/
+ADD spack.yaml build.mk /root/
+
 ADD Dockerfiles/linux-ubuntu22.04-x86_64_v2/compilers.yaml Dockerfiles/linux-ubuntu22.04-x86_64_v2/packages.yaml /root/spack/etc/spack/
 
 # Assume system make is too old
@@ -39,12 +40,10 @@ RUN spack env create --with-view /root/tools tools && \
     spack -e tools concretize && \
     spack -e tools install
 
-
-RUN --mount=type=cache,target=/root/.spack/cache \
-    spack -e . concretize -f && \
-    spack -e . install && \
-    spack -e . gc --yes-to-all && \
-    spack -e . env view --link run enable /opt/spack/view
+RUN --mount=type=cache,target=/buildcache \
+    --mount=type=cache,target=/root/.spack/cache \
+    spack mirror add cache /buildcache && \
+    make -f build.mk -j$(nproc) BUILDCACHE=/buildcache
 
 # Remove Spack metadata, python cache and static libraries to save some bytes
 RUN find -L /opt/spack -type d \( -name '__pycache__' -or -name '.spack' \) -exec rm -rf {} + && \
