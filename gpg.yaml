@@ -1,0 +1,14 @@
+spack:
+  view: /bootstrap/runner/view
+  
+  config:
+    install_tree:
+      root: /bootstrap/runner/install
+
+
+  packages:
+    all:
+      target: [x86_64]
+
+  specs:
+    - 'gnupg@2.4:'
