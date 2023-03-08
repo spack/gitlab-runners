@@ -28,6 +28,8 @@ RUN mkdir spack && \
     curl -Lfs https://github.com/spack/spack/archive/refs/heads/develop.tar.gz | tar -xzf - --strip-components=1 -C . && \
     curl -Lfs https://github.com/spack/spack/pull/34926.patch | patch -p1 && \
     curl -Lfs https://github.com/spack/spack/pull/35020.patch | patch -p1 && \
+    curl -Lfs https://github.com/spack/spack/pull/35078.patch | patch -p1 && \
+    curl -Lfs https://github.com/spack/spack/pull/35174.patch | patch -p1 && \
     true
 
 ADD spack.yaml build.mk /root/
