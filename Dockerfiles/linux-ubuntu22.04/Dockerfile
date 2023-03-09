@@ -34,7 +34,7 @@ RUN mkdir spack && \
 
 ADD spack.yaml build.mk /root/
 
-ADD Dockerfiles/linux-ubuntu22.04-x86_64_v2/compilers.yaml Dockerfiles/linux-ubuntu22.04-x86_64_v2/packages.yaml /root/spack/etc/spack/
+ADD Dockerfiles/linux-ubuntu22.04-x86_64_v2/compilers.yaml /root/spack/etc/spack/
 
 # Assume system make is too old
 RUN spack env create --with-view /root/tools tools && \

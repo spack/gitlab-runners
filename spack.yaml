@@ -4,7 +4,7 @@ spack:
   - 'awscli'
   - 'clingo-bootstrap@spack +optimized'
   - 'curl'
-  - 'file'
+  - file
   - 'git'
   - 'gmake@4.4:'
   - 'gnupg'
@@ -28,5 +28,10 @@ spack:
   packages:
     all:
       variants: ~nls
+      require:
+      - one_of:
+        - target=x86_64_v2
+        - target=aarch64
+        - target=ppc64le
     zlib:
       variants: ~shared
