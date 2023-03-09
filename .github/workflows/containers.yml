@@ -31,12 +31,15 @@ jobs:
       # A matrix of Dockerfile paths, associated tags, and which architectures
       # they support.
       matrix:
-        dockerfile: [[e4s-ubuntu-18.04, e4s-ubuntu-18.04.dockerfile, 'linux/amd64,linux/ppc64le,linux/arm64'],
-                     [e4s-ubuntu-20.04, e4s-ubuntu-20.04.dockerfile, 'linux/amd64,linux/ppc64le,linux/arm64'],
-                     [linux-ubuntu22.04-x86_64_v2, linux-ubuntu22.04-x86_64_v2/Dockerfile, 'linux/amd64'],
-                     [e4s-amazonlinux-2, e4s-amazonlinux-2.dockerfile, 'linux/amd64,linux/arm64'],
-                     [e4s-centos-7, e4s-centos-7.dockerfile, 'linux/amd64'],
-                     [e4s-fedora-36, e4s-fedora-36.dockerfile, 'linux/amd64,linux/ppc64le,linux/arm64']]
+        dockerfile: [
+          [e4s-ubuntu-18.04, e4s-ubuntu-18.04.dockerfile, 'linux/amd64,linux/ppc64le,linux/arm64'],
+          [e4s-ubuntu-20.04, e4s-ubuntu-20.04.dockerfile, 'linux/amd64,linux/ppc64le,linux/arm64'],
+          [linux-ubuntu22.04, linux-ubuntu22.04/Dockerfile, 'linux/amd64/v2,linux/arm64'],
+          [linux-amzn2023, linux-amzn2023/Dockerfile, 'linux/amd64/v2,linux/arm64'],
+          [e4s-amazonlinux-2, e4s-amazonlinux-2.dockerfile, 'linux/amd64,linux/arm64'],
+          [e4s-centos-7, e4s-centos-7.dockerfile, 'linux/amd64'],
+          [e4s-fedora-36, e4s-fedora-36.dockerfile, 'linux/amd64,linux/ppc64le,linux/arm64']
+        ]
     name: Build ${{ matrix.dockerfile[0] }}
     steps:
       - name: Checkout
