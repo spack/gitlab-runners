@@ -4,7 +4,7 @@ spack:
   - 'awscli'
   - 'clingo-bootstrap@spack +optimized'
   - 'curl'
-  - file
+  - 'file'
   - 'git'
   - 'gmake@4.4:'
   - 'gnupg'
