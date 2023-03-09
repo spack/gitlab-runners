@@ -1,3 +1,5 @@
+# A whole lot of nonsense just to set compiler flags :(
+
 compilers:
 - compiler:
     spec: clang@15.0.6
@@ -16,17 +18,34 @@ compilers:
     environment: {}
     extra_rpaths: []
 - compiler:
-    spec: gcc@11.3.1
+    spec: clang@15.0.6
     paths:
-      cc: /usr/bin/gcc
-      cxx: /usr/bin/g++
+      cc: /usr/bin/clang
+      cxx: /usr/bin/clang++
       f77: null
       fc: null
     flags:
       cxxflags: '-O3 -g0'
       cflags: '-O3 -g0'
+      ldflags: '-fuse-ld=lld -Wl,-O3'
     operating_system: amzn2023
-    target: x86_64
+    target: aarch64
+    modules: []
+    environment: {}
+    extra_rpaths: []
+- compiler:
+    spec: clang@15.0.6
+    paths:
+      cc: /usr/bin/clang
+      cxx: /usr/bin/clang++
+      f77: null
+      fc: null
+    flags:
+      cxxflags: '-O3 -g0'
+      cflags: '-O3 -g0'
+      ldflags: '-fuse-ld=lld -Wl,-O3'
+    operating_system: amzn2023
+    target: ppc64le
     modules: []
     environment: {}
     extra_rpaths: []

@@ -15,3 +15,35 @@ compilers:
     modules: []
     environment: {}
     extra_rpaths: []
+- compiler:
+    spec: clang@14.0.0
+    paths:
+      cc: /usr/bin/clang
+      cxx: /usr/bin/clang++
+      f77: null
+      fc: null
+    flags:
+      cxxflags: '-O3 -g0 -ffunction-sections'
+      cflags: '-O3 -g0 -ffunction-sections'
+      ldflags: '-fuse-ld=lld -Wl,-O3'
+    operating_system: ubuntu22.04
+    target: aarch64
+    modules: []
+    environment: {}
+    extra_rpaths: []
+- compiler:
+    spec: clang@14.0.0
+    paths:
+      cc: /usr/bin/clang
+      cxx: /usr/bin/clang++
+      f77: null
+      fc: null
+    flags:
+      cxxflags: '-O3 -g0 -ffunction-sections'
+      cflags: '-O3 -g0 -ffunction-sections'
+      ldflags: '-fuse-ld=lld -Wl,-O3'
+    operating_system: ubuntu22.04
+    target: ppc64le
+    modules: []
+    environment: {}
+    extra_rpaths: []
