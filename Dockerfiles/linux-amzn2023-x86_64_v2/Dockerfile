@@ -2,7 +2,8 @@ FROM amazonlinux:2023 as build
 
 WORKDIR /root
 
-ENV LC_ALL=C \
+ENV LANG=C.UTF-8 \
+    LC_ALL=C.UTF-8 \
     PATH=/root/tools/bin:/root/spack/bin:/usr/bin:/bin
 
 RUN yum install -y \
@@ -51,7 +52,7 @@ FROM amazonlinux:2023
 ENV NVIDIA_VISIBLE_DEVICES=all \
     NVIDIA_DRIVER_CAPABILITIES=compute,utility \
     LANG=C.UTF-8 \
-    LC_ALL=C.UTF-8
+    LC_ALL=C.UTF-8 \
     PATH=/opt/spack/view/bin:/root/spack/bin:$PATH
 
 COPY --from=build /opt/spack /opt/spack

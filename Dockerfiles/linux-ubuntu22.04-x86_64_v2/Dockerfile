@@ -56,7 +56,7 @@ FROM ubuntu:22.04
 
 ENV DEBIAN_FRONTEND=noninteractive \
     LANG=C.UTF-8 \
-    LC_ALL=C.UTF-8
+    LC_ALL=C.UTF-8 \
     PATH=/opt/spack/view/bin:/root/spack/bin:$PATH
 
 COPY --from=build /opt/spack /opt/spack
