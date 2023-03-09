@@ -47,15 +47,13 @@ RUN python3 -m pip install --upgrade pip setuptools wheel \
  && rm -rf ~/.cache
 
 COPY gpg.yaml /spack.yaml
-RUN git clone https://github.com/spack/spack /spack \
- && export SPACK_ROOT=/spack \
- && . /spack/share/spack/setup-env.sh \
- && time spack -e . concretize -f | tee concretize.log \
+RUN git clone --depth=1 https://github.com/spack/spack /spack \
+ && export PATH="/spack/bin:$PATH" && \
  && spack -e . install \
  && spack -e . gc -y \
  && spack clean -a \
- && mv concretize.log spack.yaml /bootstrap/runner/. \
- && rm -rf /spack /spack.yaml /spack.lock /.spack-env /root/.spack
+ && mv spack.lock spack.yaml /bootstrap/runner/ \
+ && rm -rf /spack /.spack-env /root/.spack
 
 ENV PATH=/bootstrap/runner/view/bin:$PATH \
     NVIDIA_VISIBLE_DEVICES=all \
