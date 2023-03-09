@@ -48,6 +48,7 @@ RUN python3 -m pip install --upgrade pip setuptools wheel \
 
 COPY gpg.yaml /spack.yaml
 RUN git clone https://github.com/spack/spack /spack \
+ && export SPACK_ROOT=/spack \
  && . /spack/share/spack/setup-env.sh \
  && time spack -e . concretize -f | tee concretize.log \
  && spack -e . install \
