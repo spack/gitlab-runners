@@ -8,7 +8,11 @@ spack:
 
   packages:
     all:
-      target: [x86_64]
+      require:
+      - one_of:
+        - target=x86_64
+        - target=aarch64
+        - target=ppc64le
 
   specs:
     - 'gnupg@2.4:'
