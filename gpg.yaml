@@ -1,0 +1,18 @@
+spack:
+  view: /bootstrap/runner/view
+  
+  config:
+    install_tree:
+      root: /bootstrap/runner/install
+
+
+  packages:
+    all:
+      require:
+      - one_of:
+        - target=x86_64
+        - target=aarch64
+        - target=ppc64le
+
+  specs:
+    - 'gnupg@2.4:'
