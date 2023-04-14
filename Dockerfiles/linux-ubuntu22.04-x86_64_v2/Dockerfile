@@ -19,6 +19,7 @@ RUN apt-get -yqq update && \
         lld \
         llvm \
         make \
+        openssl \
         patch \
         python3 \
         unzip
