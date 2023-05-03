@@ -27,7 +27,8 @@ RUN mkdir spack && \
     cd spack && \
     curl -Lfs https://github.com/spack/spack/archive/refs/heads/develop.tar.gz | tar -xzf - --strip-components=1 -C . && \
     curl -Lfs https://github.com/spack/spack/pull/34926.patch | patch -p1 && \
-    curl -Lfs https://github.com/spack/spack/pull/35020.patch | patch -p1 && \
+    curl -Lfs https://github.com/spack/spack/pull/35078.patch | patch -p1 && \
+    curl -Lfs https://github.com/spack/spack/pull/35174.patch | patch -p1 && \
     true
 
 ADD spack.yaml /root/
@@ -43,8 +44,7 @@ RUN spack env create --with-view /root/tools tools && \
 RUN --mount=type=cache,target=/root/.spack/cache \
     spack -e . concretize -f && \
     spack -e . install && \
-    spack -e . gc --yes-to-all && \
-    spack -e . env view --link run enable /opt/spack/view
+    spack -e . gc --yes-to-all
 
 # Remove Spack metadata, python cache and static libraries to save some bytes
 RUN find -L /opt/spack -type d \( -name '__pycache__' -or -name '.spack' \) -exec rm -rf {} + && \
@@ -54,12 +54,15 @@ RUN find -L /opt/spack -type d \( -name '__pycache__' -or -name '.spack' \) -exe
 FROM ubuntu:22.04
 
 ENV DEBIAN_FRONTEND=noninteractive \
-    LC_ALL=C \
+    LANG=C.UTF-8 \
+    LC_ALL=C.UTF-8 \
     PATH=/opt/spack/view/bin:/root/spack/bin:$PATH
 
 COPY --from=build /opt/spack /opt/spack
 
 # We stick to system compilers & linkers
 RUN apt-get -yqq update && \
-    apt-get -yqq install --no-install-recommends gcc gfortran g++ libc-dev && \
+    apt-get -yqq install --no-install-recommends \
+        gcc gfortran g++ \
+        libc-dev && \
     rm -rf /var/lib/apt/lists/*

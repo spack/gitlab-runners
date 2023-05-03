@@ -27,12 +27,9 @@ RUN mkdir spack && \
     cd spack && \
     curl -Lfs https://github.com/spack/spack/archive/refs/heads/develop.tar.gz | tar -xzf - --strip-components=1 -C . && \
     curl -Lfs https://github.com/spack/spack/pull/34926.patch | patch -p1 && \
-    curl -Lfs https://github.com/spack/spack/pull/35020.patch | patch -p1 && \
     curl -Lfs https://github.com/spack/spack/pull/35078.patch | patch -p1 && \
     curl -Lfs https://github.com/spack/spack/pull/35174.patch | patch -p1 && \
     true
-
-ADD spack.yaml build.mk /root/
 
 ADD spack.yaml /root/
 ADD Dockerfiles/tutorial-ubuntu-22.04/compilers.yaml Dockerfiles/tutorial-ubuntu-22.04/packages.yaml /root/spack/etc/spack/
@@ -43,10 +40,10 @@ RUN spack env create --with-view /root/tools tools && \
     spack -e tools concretize && \
     spack -e tools install
 
-RUN --mount=type=cache,target=/buildcache \
-    --mount=type=cache,target=/root/.spack/cache \
-    spack mirror add cache /buildcache && \
-    make -f build.mk -j$(nproc) BUILDCACHE=/buildcache
+RUN --mount=type=cache,target=/root/.spack/cache \
+    spack -e . concretize -f && \
+    spack -e . install && \
+    spack -e . gc --yes-to-all
 
 # Remove Spack metadata, python cache and static libraries to save some bytes
 RUN find -L /opt/spack -type d \( -name '__pycache__' -or -name '.spack' \) -exec rm -rf {} + && \
