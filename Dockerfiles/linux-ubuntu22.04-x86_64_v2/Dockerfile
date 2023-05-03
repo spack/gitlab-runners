@@ -29,21 +29,16 @@ RUN mkdir spack && \
     curl -Lfs https://github.com/spack/spack/pull/34926.patch | patch -p1 && \
     curl -Lfs https://github.com/spack/spack/pull/35078.patch | patch -p1 && \
     curl -Lfs https://github.com/spack/spack/pull/35174.patch | patch -p1 && \
+    curl -Lfs https://github.com/spack/spack/pull/37405.patch | patch -p1 && \
     true
 
 ADD spack.yaml /root/
 ADD Dockerfiles/linux-ubuntu22.04-x86_64_v2/compilers.yaml Dockerfiles/linux-ubuntu22.04-x86_64_v2/packages.yaml /root/spack/etc/spack/
 
-# Assume system make is too old
-RUN spack env create --with-view /root/tools tools && \
-    spack -e tools add gmake@4.4 && \
-    spack -e tools concretize && \
-    spack -e tools install
-
 
 RUN --mount=type=cache,target=/root/.spack/cache \
     spack -e . concretize -f && \
-    spack -e . install && \
+    spack -e . install --make -j $(nproc) && \
     spack -e . gc --yes-to-all
 
 # Remove Spack metadata, python cache and static libraries to save some bytes
