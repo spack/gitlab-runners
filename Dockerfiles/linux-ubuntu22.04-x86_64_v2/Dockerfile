@@ -38,7 +38,7 @@ ADD Dockerfiles/linux-ubuntu22.04-x86_64_v2/compilers.yaml Dockerfiles/linux-ubu
 
 RUN --mount=type=cache,target=/root/.spack/cache \
     spack -e . concretize -f && \
-    spack -e . install --make -j $(nproc) && \
+    spack -e . install --make && \
     spack -e . gc --yes-to-all
 
 # Remove Spack metadata, python cache and static libraries to save some bytes
