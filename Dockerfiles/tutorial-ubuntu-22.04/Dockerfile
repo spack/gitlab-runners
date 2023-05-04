@@ -32,8 +32,8 @@ RUN mkdir spack && \
     curl -Lfs https://github.com/spack/spack/pull/37405.patch | patch -p1 && \
     true
 
-ADD spack.yaml /root/
-ADD Dockerfiles/tutorial-ubuntu-22.04/compilers.yaml Dockerfiles/tutorial-ubuntu-22.04/packages.yaml /root/spack/etc/spack/
+COPY spack.yaml /root/
+COPY Dockerfiles/tutorial-ubuntu-22.04/compilers.yaml Dockerfiles/tutorial-ubuntu-22.04/packages.yaml /root/spack/etc/spack/
 
 RUN --mount=type=cache,target=/root/.spack/cache \
     spack -e . concretize -f && \

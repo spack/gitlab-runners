@@ -55,7 +55,6 @@ RUN git clone https://github.com/spack/spack /spack \
  && spack -e . install --make \
  && spack -e . gc -y \
  && spack clean -a \
- && mv concretize.log spack.yaml /bootstrap/runner/. \
  && rm -rf /spack /spack.yaml /spack.lock /.spack-env /root/.spack
 
 ENV PATH=/bootstrap/runner/view/bin:$PATH \
