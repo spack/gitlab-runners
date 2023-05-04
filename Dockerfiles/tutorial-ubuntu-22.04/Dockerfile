@@ -60,6 +60,6 @@ RUN apt-get -yqq update && \
         gcc gfortran g++ \
         gcc-10 gfortran-10 g++-10 \
         gcc-12 gfortran-12 g++-12 \
-        clang clang++ \
+        clang \
         libc-dev && \
     rm -rf /var/lib/apt/lists/*
