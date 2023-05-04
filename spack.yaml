@@ -1,5 +1,8 @@
 spack:
-  view: false
+  view:
+    default:
+      root: /opt/spack/view
+      link: run
   specs:
   - 'clingo-bootstrap@spack +optimized'
   - 'curl'

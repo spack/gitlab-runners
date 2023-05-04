@@ -33,8 +33,7 @@ RUN mkdir spack && \
     true
 
 COPY spack.yaml /root/
-COPY Dockerfiles/linux-ubuntu22.04-x86_64_v2/compilers.yaml Dockerfiles/linux-ubuntu22.04-x86_64_v2/packages.yaml /root/spack/etc/spack/
-
+COPY Dockerfiles/tutorial-ubuntu-22.04/compilers.yaml Dockerfiles/tutorial-ubuntu-22.04/packages.yaml /root/spack/etc/spack/
 
 RUN --mount=type=cache,target=/root/.spack/cache \
     spack -e . concretize -f && \
@@ -59,5 +58,8 @@ COPY --from=build /opt/spack /opt/spack
 RUN apt-get -yqq update && \
     apt-get -yqq install --no-install-recommends \
         gcc gfortran g++ \
+        gcc-10 gfortran-10 g++-10 \
+        gcc-12 gfortran-12 g++-12 \
+        clang \
         libc-dev && \
     rm -rf /var/lib/apt/lists/*
