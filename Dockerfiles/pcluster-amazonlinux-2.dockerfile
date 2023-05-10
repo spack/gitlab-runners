@@ -64,7 +64,7 @@ RUN git clone https://github.com/spack/spack /spack \
 RUN mkdir -p /opt/parallelcluster && echo "3.5.1" > /opt/parallelcluster/.bootstrapped
 ENV SLURM_VERSION="22.05.8" \
     LIBFABRIC_MODULE_VERSION="1.17.0" \
-    LIBFABRIC_MODULE="libfabric-aws/${LIBFABRIC_MODULE_VERSION}" \
+    LIBFABRIC_MODULE="libfabric-aws/1.17.0" \
     LIBFABRIC_VERSION="1.17.0" \
     GCC_VERSION="7.3.1"
 
