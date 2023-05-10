@@ -60,7 +60,7 @@ RUN git clone https://github.com/spack/spack /spack \
 
 # TODO Get from /opt if we are building this on top of Pcluster AMI
 # If not then use hard coded values. These are for ParallelCluster-3.5.1
-RUN echo "3.5.1" > /opt/parallelcluster/.bootstrapped
+RUN mkdir -p /opt/parallelcluster && echo "3.5.1" > /opt/parallelcluster/.bootstrapped
 ENV SLURM_VERSION="22.05.8" \
     LIBFABRIC_MODULE_VERSION="1.17.0" \
     LIBFABRIC_MODULE="libfabric-aws/${LIBFABRIC_MODULE_VERSION}" \
