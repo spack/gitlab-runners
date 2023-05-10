@@ -71,6 +71,7 @@ ENV SLURM_VERSION="22.05.8" \
 RUN mkdir -p /bootstrap && \
     cd /bootstrap && \
     git clone https://github.com/spack/spack spack \
+    && export SPACK_ROOT=/bootstrap/spack \
     && . spack/share/spack/setup-env.sh \
     && curl -sOL https://raw.githubusercontent.com/spack/spack-configs/main/AWS/parallelcluster/postinstall.sh \
     && /bin/bash postinstall.sh -fg \
