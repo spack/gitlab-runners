@@ -1,47 +1,48 @@
 FROM public.ecr.aws/amazonlinux/amazonlinux:2
 
 RUN yum update -y \
- && amazon-linux-extras install -y epel \
- && yum update -y \
- && yum install -y \
-  autoconf \
-  automake \
-  bzip2 \
-  cpio \
-  curl \
-  file \
-  findutils \
-  gcc \
-  gcc-c++ \
-  gcc-gfortran \
-  gettext \
-  git \
-  iputils \
-  jq \
-  libffi-devel \
-  glibc-locale-source \
-  m4 \
-  make \
-  mercurial \
-  mlocate \
-  ncurses-devel \
-  openssl-devel \
-  patch \
-  patchelf \
-  pciutils \
-  python3-devel \
-  python3-pip \
-  rsync \
-  tar \
-  unzip \
-  wget \
-  which \
-  xz \
-  zlib-devel \
-  environment-modules \
-  && localedef -i en_US -f UTF-8 en_US.UTF-8 \
-  && yum clean all \
-  && rm -rf /var/cache/yum/*
+    && amazon-linux-extras install -y epel \
+    && yum update -y \
+    && yum install -y \
+    autoconf \
+    automake \
+    bzip2 \
+    cpio \
+    curl \
+    environment-modules \
+    file \
+    findutils \
+    gcc \
+    gcc-c++ \
+    gcc-gfortran \
+    gettext \
+    git \
+    iputils \
+    jq \
+    libffi-devel \
+    libibverbs-core \
+    glibc-locale-source \
+    m4 \
+    make \
+    mercurial \
+    mlocate \
+    ncurses-devel \
+    openssl-devel \
+    patch \
+    patchelf \
+    pciutils \
+    python3-devel \
+    python3-pip \
+    rsync \
+    tar \
+    unzip \
+    wget \
+    which \
+    xz \
+    zlib-devel \
+    && localedef -i en_US -f UTF-8 en_US.UTF-8 \
+    && yum clean all \
+    && rm -rf /var/cache/yum/*
 
 RUN python3 -m pip install --upgrade pip setuptools wheel \
  && python3 -m pip install gnureadline 'boto3<=1.20.35' 'botocore<=1.23.46' pyyaml pytz minio requests clingo \
@@ -71,8 +72,8 @@ RUN mkdir -p /bootstrap && \
     cd /bootstrap && \
     git clone https://github.com/spack/spack spack \
     && . spack/share/spack/setup-env.sh \
-    && curl -sL https://raw.githubusercontent.com/spack/spack-configs/main/AWS/parallelcluster/postinstall.sh \
-    | sed -e '/nohup/s/&$//' -e 's/nohup//' | /bin/bash \
+    && curl -sOL https://raw.githubusercontent.com/spack/spack-configs/main/AWS/parallelcluster/postinstall.sh \
+    && /bin/bash postinstall.sh -fg \
     && spack clean -a \
     && cd /bootstrap/spack \
     && find . -type f -maxdepth 1 -delete \
