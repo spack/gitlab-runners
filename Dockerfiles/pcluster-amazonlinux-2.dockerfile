@@ -74,7 +74,7 @@ RUN mkdir -p /bootstrap && \
     && export SPACK_ROOT=/bootstrap/spack \
     && . spack/share/spack/setup-env.sh \
     && curl -sOL https://raw.githubusercontent.com/spack/spack-configs/main/AWS/parallelcluster/postinstall.sh \
-    && /bin/bash postinstall.sh -fg \
+    && /bin/bash postinstall.sh -fg -nointel \
     && spack clean -a \
     && cd /bootstrap/spack \
     && find . -type f -maxdepth 1 -delete \
