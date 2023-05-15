@@ -71,5 +71,8 @@ jobs:
           push: ${{ github.event_name != 'pull_request' }}
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
+          cache-from: |
+            ghcr.io/spack/${{ matrix.dockerfile[0] }}:nightly
+            ghcr.io/spack/${{ matrix.dockerfile[0] }}:latest
+            ${{ steps.meta.outputs.tags }}
+          cache-to: type=inline
