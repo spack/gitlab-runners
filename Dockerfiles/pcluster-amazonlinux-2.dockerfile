@@ -63,7 +63,7 @@ RUN git clone https://github.com/spack/spack /spack \
  && spack clean -a \
  && rm -rf /spack /spack.yaml /spack.lock /.spack-env /root/.spack
 
-ENV PCLUSTER_VERSION="3.5.1" \
+ARG PCLUSTER_VERSION="3.5.1" \
     LIBJWT_VERSION="1.12.0" \
     PMIX_VERSION="3.2.3" \
     SLURM_VERSION="22-05-8-1" \
