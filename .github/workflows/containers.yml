@@ -29,8 +29,9 @@ jobs:
       # Even if one container fails to build we still want the others
       # to continue their builds.
       fail-fast: false
-      # A matrix of Dockerfile paths, associated tags, and which architectures
-      # they support.
+      # 0: image name
+      # 1: Dockerfile path
+      # 2: Platforms to build
       matrix:
         dockerfile: [[e4s-ubuntu-18.04, e4s-ubuntu-18.04.dockerfile, 'linux/amd64,linux/ppc64le,linux/arm64'],
                      [e4s-ubuntu-20.04, e4s-ubuntu-20.04.dockerfile, 'linux/amd64,linux/ppc64le,linux/arm64'],
