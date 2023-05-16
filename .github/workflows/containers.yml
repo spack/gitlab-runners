@@ -75,6 +75,7 @@ jobs:
           labels: ${{ steps.meta.outputs.labels }}
           cache-from: |
             ghcr.io/spack/${{ matrix.dockerfile[0] }}:nightly
+            ghcr.io/spack/${{ matrix.dockerfile[0] }}:main
             ghcr.io/spack/${{ matrix.dockerfile[0] }}:latest
             ${{ steps.meta.outputs.tags }}
           cache-to: type=inline
