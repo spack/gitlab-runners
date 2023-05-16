@@ -20,6 +20,7 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  timeout-minutes: 600
   deploy-images:
     runs-on: self-hosted
     permissions:
