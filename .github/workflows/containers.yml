@@ -21,6 +21,7 @@ concurrency:
 
 jobs:
   deploy-images:
+    timeout-minutes: 600
     runs-on: self-hosted
     permissions:
       packages: write
@@ -28,8 +29,9 @@ jobs:
       # Even if one container fails to build we still want the others
       # to continue their builds.
       fail-fast: false
-      # A matrix of Dockerfile paths, associated tags, and which architectures
-      # they support.
+      # 0: image name
+      # 1: Dockerfile path
+      # 2: Platforms to build
       matrix:
         dockerfile: [[e4s-ubuntu-18.04, e4s-ubuntu-18.04.dockerfile, 'linux/amd64,linux/ppc64le,linux/arm64'],
                      [e4s-ubuntu-20.04, e4s-ubuntu-20.04.dockerfile, 'linux/amd64,linux/ppc64le,linux/arm64'],
@@ -68,8 +70,12 @@ jobs:
         with:
           file: Dockerfiles/${{ matrix.dockerfile[1] }}
           platforms: ${{ matrix.dockerfile[2] }}
-          push: ${{ github.event_name != 'pull_request' }}
+          push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
+          cache-from: |
+            ghcr.io/spack/${{ matrix.dockerfile[0] }}:nightly
+            ghcr.io/spack/${{ matrix.dockerfile[0] }}:main
+            ghcr.io/spack/${{ matrix.dockerfile[0] }}:latest
+            ${{ steps.meta.outputs.tags }}
+          cache-to: type=inline
