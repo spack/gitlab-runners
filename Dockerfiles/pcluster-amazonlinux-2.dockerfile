@@ -117,10 +117,12 @@ RUN mkdir -p /bootstrap && \
     && . spack/share/spack/setup-env.sh \
     && curl -sOL https://raw.githubusercontent.com/spack/spack-configs/main/AWS/parallelcluster/postinstall.sh \
     && /bin/bash postinstall.sh -fg -nointel \
-    && spack clean -a \
-    && cd /bootstrap/spack \
-    && find . -type f -maxdepth 1 -delete \
-    && rm -rf bin lib share var /root/.spack
+    && spack gpg init \
+    && spack gpg create local-cache no@email.com \
+    && spack buildcache create -a /bootstrap/local-cache $(spack find --format '/{hash}') \
+    && spack gpg export /bootstrap/public-key local-cache \
+    && cd /bootstrap \
+    && rm -rf spack
 
 ENV PATH=/bootstrap/runner/view/bin:$PATH \
     NVIDIA_VISIBLE_DEVICES=all \
