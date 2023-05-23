@@ -117,6 +117,7 @@ RUN mkdir -p /bootstrap && \
     && . spack/share/spack/setup-env.sh \
     && curl -sOL https://raw.githubusercontent.com/spack/spack-configs/main/AWS/parallelcluster/postinstall.sh \
     && /bin/bash postinstall.sh -fg -nointel \
+    && spack config add config:install_tree:padded_length:256 \
     && spack gpg init \
     && spack gpg create local-cache no@email.com \
     && spack buildcache create -a /bootstrap/local-cache $(spack find --format '/{hash}') \
