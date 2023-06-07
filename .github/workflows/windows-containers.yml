@@ -55,23 +55,11 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
+        # I can not figure out how to make this command multiline in windows
+        # Also the `--label` is omiited, since that breaks the syntax, and for some reason the `--cache-to` argument isn't recognized
       - name: Docker Build
-        run: docker build -f Dockerfiles/${{ matrix.dockerfile.path }} -t ${{ steps.meta.outputs.tags }} .
+        # run: docker build -f Dockerfiles/${{ matrix.dockerfile.path }} --platform windows/amd64 -t ${{ steps.meta.outputs.tags }} --label ${{ steps.meta.outputs.labels }}  --cache-from type=registry,ref=ghcr.io/spack/${{ matrix.dockerfile.name }}:nightly --cache-from type=registry,ref=ghcr.io/spack/${{ matrix.dockerfile.name }}:main --cache-from type=registry,ref=ghcr.io/spack/${{ matrix.dockerfile.name }}:latest --cache-to type=inline .
+        run: docker build -f Dockerfiles/${{ matrix.dockerfile.path }} --platform windows/amd64 -t ${{ steps.meta.outputs.tags }} --cache-from type=registry,ref=ghcr.io/spack/${{ matrix.dockerfile.name }}:nightly --cache-from type=registry,ref=ghcr.io/spack/${{ matrix.dockerfile.name }}:main --cache-from type=registry,ref=ghcr.io/spack/${{ matrix.dockerfile.name }}:latest .
 
       - name: Docker Push
         run: docker push ${{ steps.meta.outputs.tags }}
-
-      # - name: Build & Deploy ${{ matrix.dockerfile.path }}
-      #   uses: docker/build-push-action@v4
-      #   with:
-      #     file: Dockerfiles/${{ matrix.dockerfile.path }}
-      #     platforms: windows/amd64
-      #     push: true
-      #     tags: ${{ steps.meta.outputs.tags }}
-      #     labels: ${{ steps.meta.outputs.labels }}
-      #     cache-from: |
-      #       ghcr.io/spack/${{ matrix.dockerfile.name }}:nightly
-      #       ghcr.io/spack/${{ matrix.dockerfile.name }}:main
-      #       ghcr.io/spack/${{ matrix.dockerfile.name }}:latest
-      #       ${{ steps.meta.outputs.tags }}
-      #     cache-to: type=inline
