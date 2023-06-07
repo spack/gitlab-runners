@@ -20,95 +20,151 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  deploy-images:
+  # deploy-linux-images:
+  #   timeout-minutes: 600
+  #   runs-on: self-hosted
+  #   permissions:
+  #     packages: write
+  #   strategy:
+  #     # Even if one container fails to build we still want the others
+  #     # to continue their builds.
+  #     fail-fast: false
+  #     # 0: image name
+  #     # 1: Dockerfile path
+  #     # 2: Platforms to build
+  #     matrix:
+  #       dockerfile: [[e4s-ubuntu-18.04, e4s-ubuntu-18.04.dockerfile, 'linux/amd64,linux/ppc64le,linux/arm64'],
+  #                    [e4s-ubuntu-20.04, e4s-ubuntu-20.04.dockerfile, 'linux/amd64,linux/ppc64le,linux/arm64'],
+  #                    [linux-ubuntu22.04-x86_64_v2, linux-ubuntu22.04-x86_64_v2/Dockerfile, 'linux/amd64'],
+  #                    [tutorial-ubuntu-22.04, tutorial-ubuntu-22.04/Dockerfile, 'linux/amd64'],
+  #                    [e4s-amazonlinux-2, e4s-amazonlinux-2.dockerfile, 'linux/amd64,linux/arm64'],
+  #                    [e4s-centos-7, e4s-centos-7.dockerfile, 'linux/amd64'],
+  #                    [e4s-fedora-36, e4s-fedora-36.dockerfile, 'linux/amd64,linux/ppc64le,linux/arm64'],
+  #                    [pcluster-amazonlinux-2, pcluster-amazonlinux-2/Dockerfile, 'linux/amd64,linux/arm64']]
+  #   name: Build ${{ matrix.dockerfile[0] }}
+  #   steps:
+  #     - name: Checkout
+  #       uses: actions/checkout@v4
+
+  #     - name: Set Container Tag
+  #       id: meta
+  #       uses: docker/metadata-action@v5
+  #       with:
+  #         images: ghcr.io/spack/${{ matrix.dockerfile[0] }}
+
+  #     - name: Set up QEMU
+  #       uses: docker/setup-qemu-action@v3
+
+  #     - name: Set up Docker Buildx
+  #       uses: docker/setup-buildx-action@v3
+
+  #     - name: Log in to GitHub Container Registry
+  #       uses: docker/login-action@v3
+  #       with:
+  #         registry: ghcr.io
+  #         username: ${{ github.actor }}
+  #         password: ${{ secrets.GITHUB_TOKEN }}
+
+  #     - name: Build & Deploy ${{ matrix.dockerfile[1] }}
+  #       uses: docker/build-push-action@v5
+  #       with:
+  #         file: Dockerfiles/${{ matrix.dockerfile[1] }}
+  #         platforms: ${{ matrix.dockerfile[2] }}
+  #         push: true
+  #         tags: ${{ steps.meta.outputs.tags }}
+  #         labels: ${{ steps.meta.outputs.labels }}
+  #         cache-from: |
+  #           ghcr.io/spack/${{ matrix.dockerfile[0] }}:nightly
+  #           ghcr.io/spack/${{ matrix.dockerfile[0] }}:main
+  #           ghcr.io/spack/${{ matrix.dockerfile[0] }}:latest
+  #           ${{ steps.meta.outputs.tags }}
+  #         cache-to: type=inline
+  #         secrets: |
+  #           "bootstrap_gcc_key=${{ secrets.BOOTSTRAP_GCC_KEY }}"
+
+  # upload-gcc-buildcache:
+  #   timeout-minutes: 60
+  #   runs-on: self-hosted
+  #   permissions:
+  #     packages: write
+  #   needs: [ deploy-images ]
+  #   env:
+  #     CONTAINER_NAME: 'ghcr.io/spack/pcluster-amazonlinux-2'
+  #     KEY_FINGERPRINT: '5195AD463E705FC2014BFF08FE8754F9EEC75620'
+  #   steps:
+  #     - name: Get Container Tag
+  #       id: meta
+  #       uses: docker/metadata-action@v5
+  #       with:
+  #         images: ${{ env.CONTAINER_NAME }}
+  #     - name: Checkout Container
+  #       uses: actions/checkout@v4
+  #     - name: Copy from container to local disk
+  #       env:
+  #         CONTAINER_TAG: ${{ steps.meta.outputs.tags }}
+  #       run: |
+  #         id=$(docker create --platform linux/amd64 ${CONTAINER_TAG})
+  #         docker cp $id:/bootstrap-gcc-cache/build_cache/_pgp/${KEY_FINGERPRINT}.pub ${KEY_FINGERPRINT}.pub
+  #         docker rm -v $id
+
+  #     - name: Upload public key to Github artifacts
+  #       uses: actions/upload-artifact@v3
+  #       with:
+  #         name: ${{ env.KEY_FINGERPRINT }}.pub
+  #         path: ${{ env.KEY_FINGERPRINT }}.pub
+
+  deploy-windows-images:
     timeout-minutes: 600
-    runs-on: self-hosted
+    runs-on: windows-2019
     permissions:
       packages: write
     strategy:
       # Even if one container fails to build we still want the others
       # to continue their builds.
       fail-fast: false
-      # 0: image name
-      # 1: Dockerfile path
-      # 2: Platforms to build
       matrix:
-        dockerfile: [[e4s-ubuntu-18.04, e4s-ubuntu-18.04.dockerfile, 'linux/amd64,linux/ppc64le,linux/arm64'],
-                     [e4s-ubuntu-20.04, e4s-ubuntu-20.04.dockerfile, 'linux/amd64,linux/ppc64le,linux/arm64'],
-                     [linux-ubuntu22.04-x86_64_v2, linux-ubuntu22.04-x86_64_v2/Dockerfile, 'linux/amd64'],
-                     [tutorial-ubuntu-22.04, tutorial-ubuntu-22.04/Dockerfile, 'linux/amd64'],
-                     [e4s-amazonlinux-2, e4s-amazonlinux-2.dockerfile, 'linux/amd64,linux/arm64'],
-                     [e4s-centos-7, e4s-centos-7.dockerfile, 'linux/amd64'],
-                     [e4s-fedora-36, e4s-fedora-36.dockerfile, 'linux/amd64,linux/ppc64le,linux/arm64'],
-                     [pcluster-amazonlinux-2, pcluster-amazonlinux-2/Dockerfile, 'linux/amd64,linux/arm64']]
-    name: Build ${{ matrix.dockerfile[0] }}
+        dockerfile:
+          [
+            {
+              name: "windows-servercore1809",
+              path: "windows-servercore1809.dockerfile",
+            },
+          ]
+    name: Build ${{ matrix.dockerfile.name }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v3
 
       - name: Set Container Tag
         id: meta
-        uses: docker/metadata-action@v5
+        uses: docker/metadata-action@v4
         with:
-          images: ghcr.io/spack/${{ matrix.dockerfile[0] }}
-
-      - name: Set up QEMU
-        uses: docker/setup-qemu-action@v3
-
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
+          images: ghcr.io/spack/${{ matrix.dockerfile.name }}
 
       - name: Log in to GitHub Container Registry
-        uses: docker/login-action@v3
+        uses: docker/login-action@v2
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Build & Deploy ${{ matrix.dockerfile[1] }}
-        uses: docker/build-push-action@v5
-        with:
-          file: Dockerfiles/${{ matrix.dockerfile[1] }}
-          platforms: ${{ matrix.dockerfile[2] }}
-          push: true
-          tags: ${{ steps.meta.outputs.tags }}
-          labels: ${{ steps.meta.outputs.labels }}
-          cache-from: |
-            ghcr.io/spack/${{ matrix.dockerfile[0] }}:nightly
-            ghcr.io/spack/${{ matrix.dockerfile[0] }}:main
-            ghcr.io/spack/${{ matrix.dockerfile[0] }}:latest
-            ${{ steps.meta.outputs.tags }}
-          cache-to: type=inline
-          secrets: |
-            "bootstrap_gcc_key=${{ secrets.BOOTSTRAP_GCC_KEY }}"
+      - name: Docker Build
+        run: docker build -f ${{ matrix.path }} --build-arg -t ${{ steps.meta.outputs.tags }} .
 
-  upload-gcc-buildcache:
-    timeout-minutes: 60
-    runs-on: self-hosted
-    permissions:
-      packages: write
-    needs: [ deploy-images ]
-    env:
-      CONTAINER_NAME: 'ghcr.io/spack/pcluster-amazonlinux-2'
-      KEY_FINGERPRINT: '5195AD463E705FC2014BFF08FE8754F9EEC75620'
-    steps:
-      - name: Get Container Tag
-        id: meta
-        uses: docker/metadata-action@v5
-        with:
-          images: ${{ env.CONTAINER_NAME }}
-      - name: Checkout Container
-        uses: actions/checkout@v4
-      - name: Copy from container to local disk
-        env:
-          CONTAINER_TAG: ${{ steps.meta.outputs.tags }}
-        run: |
-          id=$(docker create --platform linux/amd64 ${CONTAINER_TAG})
-          docker cp $id:/bootstrap-gcc-cache/build_cache/_pgp/${KEY_FINGERPRINT}.pub ${KEY_FINGERPRINT}.pub
-          docker rm -v $id
+      - name: Docker Push
+        run: docker push ${{ steps.meta.outputs.tags }}
 
-      - name: Upload public key to Github artifacts
-        uses: actions/upload-artifact@v3
-        with:
-          name: ${{ env.KEY_FINGERPRINT }}.pub
-          path: ${{ env.KEY_FINGERPRINT }}.pub
+      # - name: Build & Deploy ${{ matrix.dockerfile.path }}
+      #   uses: docker/build-push-action@v4
+      #   with:
+      #     file: Dockerfiles/${{ matrix.dockerfile.path }}
+      #     platforms: windows/amd64
+      #     push: true
+      #     tags: ${{ steps.meta.outputs.tags }}
+      #     labels: ${{ steps.meta.outputs.labels }}
+      #     cache-from: |
+      #       ghcr.io/spack/${{ matrix.dockerfile.name }}:nightly
+      #       ghcr.io/spack/${{ matrix.dockerfile.name }}:main
+      #       ghcr.io/spack/${{ matrix.dockerfile.name }}:latest
+      #       ${{ steps.meta.outputs.tags }}
+      #     cache-to: type=inline
