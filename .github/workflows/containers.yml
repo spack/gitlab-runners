@@ -154,17 +154,17 @@ jobs:
       - name: Docker Push
         run: docker push ${{ steps.meta.outputs.tags }}
 
-      # - name: Build & Deploy ${{ matrix.dockerfile.path }}
-      #   uses: docker/build-push-action@v4
-      #   with:
-      #     file: Dockerfiles/${{ matrix.dockerfile.path }}
-      #     platforms: windows/amd64
-      #     push: true
-      #     tags: ${{ steps.meta.outputs.tags }}
-      #     labels: ${{ steps.meta.outputs.labels }}
-      #     cache-from: |
-      #       ghcr.io/spack/${{ matrix.dockerfile.name }}:nightly
-      #       ghcr.io/spack/${{ matrix.dockerfile.name }}:main
-      #       ghcr.io/spack/${{ matrix.dockerfile.name }}:latest
-      #       ${{ steps.meta.outputs.tags }}
-      #     cache-to: type=inline
+      - name: Build & Deploy ${{ matrix.dockerfile[1] }}
+        uses: docker/build-push-action@v4
+        with:
+          file: Dockerfiles/${{ matrix.dockerfile[1] }}
+          platforms: ${{ matrix.dockerfile[2] }}
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: |
+            ghcr.io/spack/${{ matrix.dockerfile[0] }}:nightly
+            ghcr.io/spack/${{ matrix.dockerfile[0] }}:main
+            ghcr.io/spack/${{ matrix.dockerfile[0] }}:latest
+            ${{ steps.meta.outputs.tags }}
+          cache-to: type=inline
