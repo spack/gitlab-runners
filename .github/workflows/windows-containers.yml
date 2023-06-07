@@ -56,7 +56,7 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Docker Build
-        run: docker build -f ${{ matrix.path }} -t ${{ steps.meta.outputs.tags }} .
+        run: docker build -f Dockerfiles/${{ matrix.dockerfile.path }} -t ${{ steps.meta.outputs.tags }} .
 
       - name: Docker Push
         run: docker push ${{ steps.meta.outputs.tags }}
