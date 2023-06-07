@@ -1,23 +1,23 @@
-name: Containers
-on:
-  # This Workflow can be triggered manually
-  workflow_dispatch:
-  # Build container images on a daily schedule
-  schedule:
-    - cron: '11 5 * * *'
-  push:
-    branches:
-    - main
-  pull_request:
-    branches:
-      - main
-  # Let's also build & tag Spack containers on releases.
-  release:
-    types: [published]
+# name: Containers
+# on:
+#   # This Workflow can be triggered manually
+#   workflow_dispatch:
+#   # Build container images on a daily schedule
+#   schedule:
+#     - cron: '11 5 * * *'
+#   push:
+#     branches:
+#     - main
+#   pull_request:
+#     branches:
+#       - main
+#   # Let's also build & tag Spack containers on releases.
+#   release:
+#     types: [published]
 
-concurrency:
-  group: ci-${{github.ref}}-${{github.event.pull_request.number || github.run_number}}
-  cancel-in-progress: true
+# concurrency:
+#   group: ci-${{github.ref}}-${{github.event.pull_request.number || github.run_number}}
+#   cancel-in-progress: true
 
 jobs:
   # deploy-linux-images:
@@ -141,12 +141,12 @@ jobs:
         with:
           images: ghcr.io/spack/${{ matrix.dockerfile.name }}
 
-      - name: Log in to GitHub Container Registry
-        uses: docker/login-action@v2
-        with:
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
+#       - name: Log in to GitHub Container Registry
+#         uses: docker/login-action@v2
+#         with:
+#           registry: ghcr.io
+#           username: ${{ github.actor }}
+#           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Docker Build
         run: docker build -f ${{ matrix.path }} --build-arg -t ${{ steps.meta.outputs.tags }} .
