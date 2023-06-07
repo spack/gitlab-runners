@@ -1,81 +1,81 @@
-name: Containers
-on:
-  # This Workflow can be triggered manually
-  workflow_dispatch:
-  # Build container images on a daily schedule
-  schedule:
-    - cron: '11 5 * * *'
-  push:
-    branches:
-    - main
-  pull_request:
-    branches:
-      - main
-  # Let's also build & tag Spack containers on releases.
-  release:
-    types: [published]
+# name: Containers
+# on:
+#   # This Workflow can be triggered manually
+#   workflow_dispatch:
+#   # Build container images on a daily schedule
+#   schedule:
+#     - cron: '11 5 * * *'
+#   push:
+#     branches:
+#     - main
+#   pull_request:
+#     branches:
+#       - main
+#   # Let's also build & tag Spack containers on releases.
+#   release:
+#     types: [published]
 
-concurrency:
-  group: ci-${{github.ref}}-${{github.event.pull_request.number || github.run_number}}
-  cancel-in-progress: true
+# concurrency:
+#   group: ci-${{github.ref}}-${{github.event.pull_request.number || github.run_number}}
+#   cancel-in-progress: true
 
-jobs:
-  deploy-linux-images:
-    timeout-minutes: 600
-    runs-on: self-hosted
-    permissions:
-      packages: write
-    strategy:
-      # Even if one container fails to build we still want the others
-      # to continue their builds.
-      fail-fast: false
-      # 0: image name
-      # 1: Dockerfile path
-      # 2: Platforms to build
-      matrix:
-        dockerfile: [[e4s-ubuntu-18.04, e4s-ubuntu-18.04.dockerfile, 'linux/amd64,linux/ppc64le,linux/arm64'],
-                     [e4s-ubuntu-20.04, e4s-ubuntu-20.04.dockerfile, 'linux/amd64,linux/ppc64le,linux/arm64'],
-                     [linux-ubuntu22.04-x86_64_v2, linux-ubuntu22.04-x86_64_v2/Dockerfile, 'linux/amd64'],
-                     [tutorial-ubuntu-22.04, tutorial-ubuntu-22.04/Dockerfile, 'linux/amd64'],
-                     [e4s-amazonlinux-2, e4s-amazonlinux-2.dockerfile, 'linux/amd64,linux/arm64'],
-                     [e4s-centos-7, e4s-centos-7.dockerfile, 'linux/amd64'],
-                     [e4s-fedora-36, e4s-fedora-36.dockerfile, 'linux/amd64,linux/ppc64le,linux/arm64'],
-                     [pcluster-amazonlinux-2, pcluster-amazonlinux-2.dockerfile, 'linux/amd64,linux/arm64']]
-    name: Build ${{ matrix.dockerfile[0] }}
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v3
+# jobs:
+#   deploy-linux-images:
+#     timeout-minutes: 600
+#     runs-on: self-hosted
+#     permissions:
+#       packages: write
+#     strategy:
+#       # Even if one container fails to build we still want the others
+#       # to continue their builds.
+#       fail-fast: false
+#       # 0: image name
+#       # 1: Dockerfile path
+#       # 2: Platforms to build
+#       matrix:
+#         dockerfile: [[e4s-ubuntu-18.04, e4s-ubuntu-18.04.dockerfile, 'linux/amd64,linux/ppc64le,linux/arm64'],
+#                      [e4s-ubuntu-20.04, e4s-ubuntu-20.04.dockerfile, 'linux/amd64,linux/ppc64le,linux/arm64'],
+#                      [linux-ubuntu22.04-x86_64_v2, linux-ubuntu22.04-x86_64_v2/Dockerfile, 'linux/amd64'],
+#                      [tutorial-ubuntu-22.04, tutorial-ubuntu-22.04/Dockerfile, 'linux/amd64'],
+#                      [e4s-amazonlinux-2, e4s-amazonlinux-2.dockerfile, 'linux/amd64,linux/arm64'],
+#                      [e4s-centos-7, e4s-centos-7.dockerfile, 'linux/amd64'],
+#                      [e4s-fedora-36, e4s-fedora-36.dockerfile, 'linux/amd64,linux/ppc64le,linux/arm64'],
+#                      [pcluster-amazonlinux-2, pcluster-amazonlinux-2.dockerfile, 'linux/amd64,linux/arm64']]
+#     name: Build ${{ matrix.dockerfile[0] }}
+#     steps:
+#       - name: Checkout
+#         uses: actions/checkout@v3
 
-      - name: Set Container Tag
-        id: meta
-        uses: docker/metadata-action@v4
-        with:
-          images: ghcr.io/spack/${{ matrix.dockerfile[0] }}
+#       - name: Set Container Tag
+#         id: meta
+#         uses: docker/metadata-action@v4
+#         with:
+#           images: ghcr.io/spack/${{ matrix.dockerfile[0] }}
 
-      - name: Set up QEMU
-        uses: docker/setup-qemu-action@v2
+#       - name: Set up QEMU
+#         uses: docker/setup-qemu-action@v2
 
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v2
+#       - name: Set up Docker Buildx
+#         uses: docker/setup-buildx-action@v2
 
-      - name: Log in to GitHub Container Registry
-        uses: docker/login-action@v2
-        with:
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
+#       - name: Log in to GitHub Container Registry
+#         uses: docker/login-action@v2
+#         with:
+#           registry: ghcr.io
+#           username: ${{ github.actor }}
+#           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Build & Deploy ${{ matrix.dockerfile[1] }}
-        uses: docker/build-push-action@v4
-        with:
-          file: Dockerfiles/${{ matrix.dockerfile[1] }}
-          platforms: ${{ matrix.dockerfile[2] }}
-          push: true
-          tags: ${{ steps.meta.outputs.tags }}
-          labels: ${{ steps.meta.outputs.labels }}
-          cache-from: |
-            ghcr.io/spack/${{ matrix.dockerfile[0] }}:nightly
-            ghcr.io/spack/${{ matrix.dockerfile[0] }}:main
-            ghcr.io/spack/${{ matrix.dockerfile[0] }}:latest
-            ${{ steps.meta.outputs.tags }}
-          cache-to: type=inline
+#       - name: Build & Deploy ${{ matrix.dockerfile[1] }}
+#         uses: docker/build-push-action@v4
+#         with:
+#           file: Dockerfiles/${{ matrix.dockerfile[1] }}
+#           platforms: ${{ matrix.dockerfile[2] }}
+#           push: true
+#           tags: ${{ steps.meta.outputs.tags }}
+#           labels: ${{ steps.meta.outputs.labels }}
+#           cache-from: |
+#             ghcr.io/spack/${{ matrix.dockerfile[0] }}:nightly
+#             ghcr.io/spack/${{ matrix.dockerfile[0] }}:main
+#             ghcr.io/spack/${{ matrix.dockerfile[0] }}:latest
+#             ${{ steps.meta.outputs.tags }}
+#           cache-to: type=inline
