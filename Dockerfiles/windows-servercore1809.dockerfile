@@ -26,6 +26,7 @@ RUN \
     && (start /w vs_buildtools.exe --quiet --wait --norestart --nocache \
     --installPath "%ProgramFiles(x86)%\Microsoft Visual Studio\2019\BuildTools" \
     --add Microsoft.VisualStudio.Workload.VCTools \
+    --add Microsoft.VisualStudio.Workload.ManagedDesktopBuildTools \
     --add Microsoft.VisualStudio.Component.TestTools.BuildTools \
     --add Microsoft.VisualStudio.Component.VC.ASAN \
     --add Microsoft.VisualStudio.Component.VC.CMake.Project \
@@ -50,6 +51,17 @@ RUN \
     \
     # Cleanup
     && del /q vs_buildtools.exe
+
+# Set shell back to powershell
+SHELL ["powershell", "-command"]
+
+# Install chocolatey
+RUN Set-ExecutionPolicy Bypass -Scope Process -Force; \
+    [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072; \
+    iex ((New-Object System.Net.WebClient).DownloadString('https://community.chocolatey.org/install.ps1'))
+
+# Install git
+RUN choco install git
 
 # Define the entry point for the docker container.
 # This entry point starts the developer command prompt and launches the PowerShell shell.
