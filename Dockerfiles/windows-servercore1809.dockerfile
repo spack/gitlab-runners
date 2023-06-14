@@ -17,32 +17,32 @@ RUN python -m pip install pyreadline boto3 pyyaml pytz minio requests clingo
 SHELL ["cmd", "/S", "/C"]
 
 # Install build tools including MSVC, CMake, Win-SDK
+# Note: `^` is the multiline command delimiter for CMD, and `\` is the multiline delimiter for Docker.
 RUN \
     # Download the Build Tools bootstrapper.
-    curl -SL --output vs_buildtools.exe https://aka.ms/vs/17/release/vs_buildtools.exe \
-    \
+    curl -SL --output vs_buildtools.exe https://aka.ms/vs/17/release/vs_buildtools.exe ^ \
     # Install Build Tools with the Microsoft.VisualStudio.Workload.AzureBuildTools workload, excluding workloads and components with known issues.
-    && (start /w vs_buildtools.exe --quiet --wait --norestart --nocache \
-    --installPath "%ProgramFiles(x86)%\Microsoft Visual Studio\2022\BuildTools" \
-    --add Microsoft.VisualStudio.Workload.VCTools \
-    --add Microsoft.VisualStudio.Component.TestTools.BuildTools \
-    --add Microsoft.VisualStudio.Component.VC.ASAN \
-    --add Microsoft.VisualStudio.Component.VC.CMake.Project \
-    --add Microsoft.VisualStudio.Component.VC.Tools.x86.x64 \
-    --add Microsoft.VisualStudio.Component.Windows10SDK.19041 \
-    --add Microsoft.Component.VC.Runtime.UCRTSDK \
-    --add Microsoft.VisualStudio.Component.VC.140 \
-    --add Microsoft.VisualStudio.Component.VC.ATL \
-    --add Microsoft.VisualStudio.Component.VC.ATLMFC \
-    --add Microsoft.VisualStudio.Component.VC.CLI.Support \
-    --add Microsoft.VisualStudio.Component.VC.v141.x86.x64 \
-    --add Microsoft.VisualStudio.Component.Windows10SDK.18362 \
-    --add Microsoft.VisualStudio.Component.Windows10SDK.17763 \
-    --add Microsoft.VisualStudio.Component.Windows10SDK.17134 \
-    --add Microsoft.VisualStudio.Component.Windows10SDK.16299 \
-    --add Microsoft.VisualStudio.Component.VC.v141.x86.x64 \
-    || IF "%ERRORLEVEL%"=="3010" EXIT 0) \
+    && start /w vs_buildtools.exe --quiet --wait --norestart --nocache ^ \
+    --installPath "%ProgramFiles(x86)%\Microsoft Visual Studio\2022\BuildTools" ^ \
+    --add Microsoft.VisualStudio.Workload.VCTools ^ \
+    --add Microsoft.VisualStudio.Component.TestTools.BuildTools ^ \
+    --add Microsoft.VisualStudio.Component.VC.ASAN ^ \
+    --add Microsoft.VisualStudio.Component.VC.CMake.Project ^ \
+    --add Microsoft.VisualStudio.Component.VC.Tools.x86.x64 ^ \
+    --add Microsoft.VisualStudio.Component.Windows10SDK.19041 ^ \
+    --add Microsoft.Component.VC.Runtime.UCRTSDK ^ \
+    --add Microsoft.VisualStudio.Component.VC.140 ^ \
+    --add Microsoft.VisualStudio.Component.VC.ATL ^ \
+    --add Microsoft.VisualStudio.Component.VC.ATLMFC ^ \
+    --add Microsoft.VisualStudio.Component.VC.CLI.Support ^ \
+    --add Microsoft.VisualStudio.Component.VC.v141.x86.x64 ^ \
+    --add Microsoft.VisualStudio.Component.Windows10SDK.18362 ^ \
+    --add Microsoft.VisualStudio.Component.Windows10SDK.17763 ^ \
+    --add Microsoft.VisualStudio.Component.Windows10SDK.17134 ^ \
+    --add Microsoft.VisualStudio.Component.Windows10SDK.16299 ^ \
+    --add Microsoft.VisualStudio.Component.VC.v141.x86.x64 ^ \
     \
+    && powershell -Command "if ($err = dir $Env:TEMP -Filter dd_setup_*_errors.log | where Length -gt 0 | Get-Content) { throw $err }" \
     # Cleanup
     && del /q vs_buildtools.exe
 
