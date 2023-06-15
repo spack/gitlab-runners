@@ -1,8 +1,10 @@
+# escape=`
+
 FROM mcr.microsoft.com/dotnet/framework/sdk:4.8-windowsservercore-ltsc2019
 
 # Install chocolatey
-RUN Set-ExecutionPolicy Bypass -Scope Process -Force; \
-    [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072; \
+RUN Set-ExecutionPolicy Bypass -Scope Process -Force; `
+    [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072; `
     iex ((New-Object System.Net.WebClient).DownloadString('https://community.chocolatey.org/install.ps1'))
 
 # Install git and python3.11
@@ -22,8 +24,8 @@ RUN start /w vs_buildtools.exe --quiet --wait --norestart --nocache --installPat
 RUN del /q vs_buildtools.exe
 
 # Set env vars
-ENV NVIDIA_VISIBLE_DEVICES=all \
-    NVIDIA_DRIVER_CAPABILITIES=compute,utility \
-    LANGUAGE=en_US:en \
-    LANG=en_US.UTF-8 \
+ENV NVIDIA_VISIBLE_DEVICES=all `
+    NVIDIA_DRIVER_CAPABILITIES=compute,utility `
+    LANGUAGE=en_US:en `
+    LANG=en_US.UTF-8 `
     LC_ALL=en_US.UTF-8
