@@ -2,18 +2,18 @@
 
 FROM mcr.microsoft.com/dotnet/framework/sdk:4.8-windowsservercore-ltsc2019
 
-# Install chocolatey
-RUN Set-ExecutionPolicy Bypass -Scope Process -Force; `
-    [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072; `
-    iex ((New-Object System.Net.WebClient).DownloadString('https://community.chocolatey.org/install.ps1'))
+# # Install chocolatey
+# RUN Set-ExecutionPolicy Bypass -Scope Process -Force; `
+#     [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072; `
+#     iex ((New-Object System.Net.WebClient).DownloadString('https://community.chocolatey.org/install.ps1'))
 
-# Install git and python3.11
-RUN choco install -y git.install
-RUN choco install -y python --version=3.11.0
+# # Install git and python3.11
+# RUN choco install -y git.install
+# RUN choco install -y python --version=3.11.0
 
-# Install spack requirements
-RUN python -m pip install --upgrade pip setuptools wheel
-RUN python -m pip install pyreadline boto3 pyyaml pytz minio requests clingo
+# # Install spack requirements
+# RUN python -m pip install --upgrade pip setuptools wheel
+# RUN python -m pip install pyreadline boto3 pyyaml pytz minio requests clingo
 
 # Restore the default Windows shell for correct batch processing.
 SHELL ["cmd", "/S", "/C"]
