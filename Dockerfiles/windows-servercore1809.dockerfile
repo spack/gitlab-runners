@@ -47,3 +47,5 @@ ENV NVIDIA_VISIBLE_DEVICES=all `
     LANGUAGE=en_US:en `
     LANG=en_US.UTF-8 `
     LC_ALL=en_US.UTF-8
+
+ENTRYPOINT ["C:\\Spack\\BuildTools\\Common7\\Tools\\VsDevCmd.bat", "&&", "powershell.exe", "-NoLogo", "-ExecutionPolicy", "Bypass"]
