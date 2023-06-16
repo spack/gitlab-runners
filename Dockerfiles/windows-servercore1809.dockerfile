@@ -20,25 +20,27 @@ SHELL ["cmd", "/S", "/C"]
 
 # Install build tools including MSVC, CMake, Win-SDK
 RUN curl -SL --output vs_buildtools.exe https://aka.ms/vs/17/release/vs_buildtools.exe
-RUN start /w vs_buildtools.exe --quiet --wait --norestart --nocache ^ `
-    --installPath "C:\Program Files (x86)\Microsoft Visual Studio\2022\BuildTools" ^ `
-    --add Microsoft.VisualStudio.Workload.VCTools ^ `
-    --add Microsoft.VisualStudio.Component.TestTools.BuildTools ^ `
-    --add Microsoft.VisualStudio.Component.VC.ASAN ^ `
-    --add Microsoft.VisualStudio.Component.VC.CMake.Project ^ `
-    --add Microsoft.VisualStudio.Component.VC.Tools.x86.x64 ^ `
-    --add Microsoft.VisualStudio.Component.Windows10SDK.19041 ^ `
-    --add Microsoft.Component.VC.Runtime.UCRTSDK ^ `
-    --add Microsoft.VisualStudio.Component.VC.140 ^ `
-    --add Microsoft.VisualStudio.Component.VC.ATL ^ `
-    --add Microsoft.VisualStudio.Component.VC.ATLMFC ^ `
-    --add Microsoft.VisualStudio.Component.VC.CLI.Support ^ `
-    --add Microsoft.VisualStudio.Component.VC.v141.x86.x64 ^ `
-    --add Microsoft.VisualStudio.Component.Windows10SDK.18362 ^ `
-    --add Microsoft.VisualStudio.Component.Windows10SDK.17763 ^ `
-    --add Microsoft.VisualStudio.Component.Windows10SDK.17134 ^ `
-    --add Microsoft.VisualStudio.Component.Windows10SDK.16299 ^ `
-    --add Microsoft.VisualStudio.Component.VC.v141.x86.x64
+RUN (`
+    start /w vs_buildtools.exe --quiet --wait --norestart --nocache `
+    --installPath "C:\Program Files (x86)\Microsoft Visual Studio\2022\BuildTools" `
+    --add Microsoft.VisualStudio.Workload.VCTools `
+    --add Microsoft.VisualStudio.Component.TestTools.BuildTools `
+    --add Microsoft.VisualStudio.Component.VC.ASAN `
+    --add Microsoft.VisualStudio.Component.VC.CMake.Project `
+    --add Microsoft.VisualStudio.Component.VC.Tools.x86.x64 `
+    --add Microsoft.VisualStudio.Component.Windows10SDK.19041 `
+    --add Microsoft.Component.VC.Runtime.UCRTSDK `
+    --add Microsoft.VisualStudio.Component.VC.140 `
+    --add Microsoft.VisualStudio.Component.VC.ATL `
+    --add Microsoft.VisualStudio.Component.VC.ATLMFC `
+    --add Microsoft.VisualStudio.Component.VC.CLI.Support `
+    --add Microsoft.VisualStudio.Component.VC.v141.x86.x64 `
+    --add Microsoft.VisualStudio.Component.Windows10SDK.18362 `
+    --add Microsoft.VisualStudio.Component.Windows10SDK.17763 `
+    --add Microsoft.VisualStudio.Component.Windows10SDK.17134 `
+    --add Microsoft.VisualStudio.Component.Windows10SDK.16299 `
+    --add Microsoft.VisualStudio.Component.VC.v141.x86.x64 `
+    )
 
 RUN del /q vs_buildtools.exe
 
