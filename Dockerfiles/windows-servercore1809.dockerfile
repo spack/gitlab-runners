@@ -1,28 +1,27 @@
 # escape=`
-
 FROM mcr.microsoft.com/dotnet/framework/sdk:4.8-windowsservercore-ltsc2019
 
-# # Install chocolatey
-# RUN Set-ExecutionPolicy Bypass -Scope Process -Force; `
-#     [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072; `
-#     iex ((New-Object System.Net.WebClient).DownloadString('https://community.chocolatey.org/install.ps1'))
+# Install chocolatey
+RUN Set-ExecutionPolicy Bypass -Scope Process -Force; `
+    [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072; `
+    iex ((New-Object System.Net.WebClient).DownloadString('https://community.chocolatey.org/install.ps1'))
 
-# # Install git and python3.11
-# RUN choco install -y git.install
-# RUN choco install -y python --version=3.11.0
+# Install git and python3.11
+RUN choco install -y git.install
+RUN choco install -y python --version=3.11.0
 
-# # Install spack requirements
-# RUN python -m pip install --upgrade pip setuptools wheel
-# RUN python -m pip install pyreadline boto3 pyyaml pytz minio requests clingo
+# Install spack requirements
+RUN python -m pip install --upgrade pip setuptools wheel
+RUN python -m pip install pyreadline boto3 pyyaml pytz minio requests clingo
 
 # Restore the default Windows shell for correct batch processing.
 SHELL ["cmd", "/S", "/C"]
 
 # Install build tools including MSVC, CMake, Win-SDK
-RUN curl -SL --output vs_buildtools.exe https://aka.ms/vs/17/release/vs_buildtools.exe
-RUN (`
-    start /w vs_buildtools.exe --quiet --wait --norestart --nocache `
-    --installPath "C:\TestPath" `
+RUN `
+    curl -SL --output vs_buildtools.exe https://aka.ms/vs/17/release/vs_buildtools.exe `
+    && start /w vs_buildtools.exe --quiet --wait --norestart --nocache `
+    --installPath "C:\Spack\BuildTools" `
     --add Microsoft.VisualStudio.Workload.VCTools `
     --add Microsoft.VisualStudio.Component.TestTools.BuildTools `
     --add Microsoft.VisualStudio.Component.VC.ASAN `
@@ -40,9 +39,7 @@ RUN (`
     --add Microsoft.VisualStudio.Component.Windows10SDK.17134 `
     --add Microsoft.VisualStudio.Component.Windows10SDK.16299 `
     --add Microsoft.VisualStudio.Component.VC.v141.x86.x64 `
-    )
-
-RUN del /q vs_buildtools.exe
+    && del /q vs_buildtools.exe
 
 # Set env vars
 ENV NVIDIA_VISIBLE_DEVICES=all `
