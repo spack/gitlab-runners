@@ -22,7 +22,7 @@ SHELL ["cmd", "/S", "/C"]
 RUN curl -SL --output vs_buildtools.exe https://aka.ms/vs/17/release/vs_buildtools.exe
 RUN (`
     start /w vs_buildtools.exe --quiet --wait --norestart --nocache `
-    --installPath "C:\Program Files (x86)\Microsoft Visual Studio\2022\BuildTools" `
+    --installPath "C:\TestPath" `
     --add Microsoft.VisualStudio.Workload.VCTools `
     --add Microsoft.VisualStudio.Component.TestTools.BuildTools `
     --add Microsoft.VisualStudio.Component.VC.ASAN `
