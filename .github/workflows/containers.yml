@@ -40,7 +40,7 @@ jobs:
                      [e4s-amazonlinux-2, e4s-amazonlinux-2.dockerfile, 'linux/amd64,linux/arm64'],
                      [e4s-centos-7, e4s-centos-7.dockerfile, 'linux/amd64'],
                      [e4s-fedora-36, e4s-fedora-36.dockerfile, 'linux/amd64,linux/ppc64le,linux/arm64'],
-                     [pcluster-amazonlinux-2, pcluster-amazonlinux-2.dockerfile, 'linux/amd64,linux/arm64']]
+                     [pcluster-amazonlinux-2, pcluster-amazonlinux-2/Dockerfile, 'linux/amd64,linux/arm64']]
     name: Build ${{ matrix.dockerfile[0] }}
     steps:
       - name: Checkout
