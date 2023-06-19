@@ -125,7 +125,7 @@ RUN mkdir -p $(dirname "${SPACK_ROOT}") \
     && spack external find \
     && spack tags build-tools | xargs -I {} spack config rm packages:{} \
     && spack install gcc \
-    && $(dirname "${SPACK_ROOT}") /root/.spack/packages.yaml
+    && rm -rf $(dirname "${SPACK_ROOT}") /root/.spack/packages.yaml
 
 ENV PATH=/bootstrap/runner/view/bin:$PATH \
     NVIDIA_VISIBLE_DEVICES=all \
