@@ -115,7 +115,7 @@ ARG SPACK_ROOT="/bootstrap-compilers/spack"
 #  commit after https://github.com/spack/spack/pull/34821
 ARG SPACK_COMMIT=f27d012
 ARG TARGETARCH
-COPY Dockerfiles/pcluster-amazonlinux-2/packages-${TARGETARCH}.yaml /root/.spack/packages.yaml
+COPY Dockerfiles/pcluster-amazonlinux-2/${TARGETARCH}/packages.yaml /root/.spack/packages.yaml
 RUN mkdir -p $(dirname "${SPACK_ROOT}") \
     && git clone https://github.com/spack/spack "${SPACK_ROOT}" \
     && pushd "${SPACK_ROOT}" && git checkout ${SPACK_COMMIT} && popd \
