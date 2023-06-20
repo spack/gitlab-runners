@@ -120,6 +120,7 @@ RUN mkdir -p $(dirname "${SPACK_ROOT}") \
     && git clone https://github.com/spack/spack "${SPACK_ROOT}" \
     && pushd "${SPACK_ROOT}" && git checkout ${SPACK_COMMIT} && popd \
     && cp "${SPACK_ROOT}/share/spack/gitlab/cloud_pipelines/configs/config.yaml" "${SPACK_ROOT}/etc/spack/config.yaml" \
+    && cp "${SPACK_ROOT}/share/spack/gitlab/cloud_pipelines/configs/config.yaml" "/bootstrap/cloud_pipelines-config.yaml" \
     && . "${SPACK_ROOT}/share/spack/setup-env.sh" \
     && spack compiler add \
     && spack external find \
