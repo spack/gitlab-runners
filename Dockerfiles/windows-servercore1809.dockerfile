@@ -12,7 +12,7 @@ RUN choco install -y python --version=3.11.0
 
 # Install spack requirements
 RUN python -m pip install --upgrade pip setuptools wheel
-RUN python -m pip install pyreadline boto3 pyyaml pytz minio requests clingo
+RUN python -m pip install pyreadline boto3 pyyaml pytz minio requests clingo pywin32
 
 # Restore the default Windows shell for correct batch processing.
 SHELL ["cmd", "/S", "/C"]
