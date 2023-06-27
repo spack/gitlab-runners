@@ -2,5 +2,4 @@
 packages:
   gcc:
     compiler: [gcc]
-    require:
-      - one_of: ["gcc@12 +binutils ^binutils@2.37 target=x86_64_v3"]
+    require: "gcc@12 +binutils ^binutils@2.37 target=x86_64_v3"
