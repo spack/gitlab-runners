@@ -79,3 +79,28 @@ jobs:
             ghcr.io/spack/${{ matrix.dockerfile[0] }}:latest
             ${{ steps.meta.outputs.tags }}
           cache-to: type=inline
+
+      - name: Run
+        if: ${{ matrix.dockerfile[0] == 'pcluster-amazonlinux-2' }}
+        uses: tj-actions/docker-run@v2
+        id: docker-run
+        with:
+          image: ${{ steps.meta.outputs.tags }}
+          options: --name test-app -d
+          args: sleep 10
+
+      - name: Copy from container to host
+        if: ${{ matrix.dockerfile[0] == 'pcluster-amazonlinux-2' }}
+        uses: tj-actions/docker-cp@v2
+        with:
+          container: ${{ steps.docker-run.outputs.container-id }}
+          source: /bootstrap-gcc-cache-${TARGETARCH}.tgz
+          destination: bootstrap-gcc-cache-${TARGETARCH}.tgz
+
+      - name: Upload bootstrap cache
+        if: ${{ matrix.dockerfile[0] == 'pcluster-amazonlinux-2' }}
+        uses: actions/upload-artifact@v3
+        with:
+          name: bootstrap-gcc-cache-${TARGETARCH}.tgz
+          path: bootstrap-gcc-cache-${TARGETARCH}.tgz
+
