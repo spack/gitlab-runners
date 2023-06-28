@@ -126,8 +126,7 @@ RUN mkdir -p $(dirname "${SPACK_ROOT}") \
     && spack external find \
     && spack tags build-tools | xargs -I {} spack config rm packages:{} \
     && spack install gcc \
-    && spack buildcache create -a -u $(dirname "${SPACK_ROOT}")/bootstrap-gcc-cache $(spack find --format '/{hash}') \
-    && tar --directory=$(dirname "${SPACK_ROOT}") -czf /bootstrap-gcc-cache-${TARGETARCH}.tgz bootstrap-gcc-cache \
+    && spack buildcache create -a -u /bootstrap-gcc-cache $(spack find --format '/{hash}') \
     && rm -rf $(dirname "${SPACK_ROOT}") /root/.spack
 
 ENV PATH=/bootstrap/runner/view/bin:$PATH \

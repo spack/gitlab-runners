@@ -80,27 +80,36 @@ jobs:
             ${{ steps.meta.outputs.tags }}
           cache-to: type=inline
 
-      - name: Run
-        if: ${{ matrix.dockerfile[0] == 'pcluster-amazonlinux-2' }}
-        uses: tj-actions/docker-run@v2
-        id: docker-run
-        with:
-          image: ${{ steps.meta.outputs.tags }}
-          options: --name test-app -d
-          args: sleep 10
+  upload-gcc-buildcache:
+    timeout-minutes: 60
+    runs-on: self-hosted
+    permissions:
+      packages: write
+    needs: [ deploy-images ]
+    env:
+      CONTAINER_NAME: 'ghcr.io/spack/pcluster-amazonlinux-2'
+    steps:
+      - uses: actions/checkout@v3
+      - run: |
+          id=$(docker create --platform linux/amd64 ${CONTAINER_NAME})
+          mkdir amd64
+          docker cp $id:/bootstrap-gcc-cache amd64/bootstrap-gcc-cache
+          docker rm -v $id
 
-      - name: Copy from container to host
-        if: ${{ matrix.dockerfile[0] == 'pcluster-amazonlinux-2' }}
-        uses: tj-actions/docker-cp@v2
-        with:
-          container: ${{ steps.docker-run.outputs.container-id }}
-          source: /bootstrap-gcc-cache-${TARGETARCH}.tgz
-          destination: bootstrap-gcc-cache-${TARGETARCH}.tgz
+          id=$(docker create --platform linux/arm64 ${CONTAINER_NAME})
+          mkdir arm64
+          docker cp $id:/bootstrap-gcc-cache arm64/bootstrap-gcc-cache
+          docker rm -v $id
 
-      - name: Upload bootstrap cache
-        if: ${{ matrix.dockerfile[0] == 'pcluster-amazonlinux-2' }}
-        uses: actions/upload-artifact@v3
-        with:
-          name: bootstrap-gcc-cache-${TARGETARCH}.tgz
-          path: bootstrap-gcc-cache-${TARGETARCH}.tgz
+          # Unify the mirrors. This is required since the upload-artifacts action
+          # computes the common ancestor among different paths and starts from there
+          # instead of "merging" the copies
+          mkdir bootstrap-gcc-cache
+          rsync -a ./amd64/bootstrap-gcc-cache/ ./bootstrap-gcc-cache
+          rsync -a ./arm64/bootstrap-gcc-cache/ ./bootstrap-gcc-cache
 
+      - uses: actions/upload-artifact@v3
+        with:
+          name: bootstrap_gcc_cache
+          path: |
+            bootstrap-gcc-cache
