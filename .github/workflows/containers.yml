@@ -93,7 +93,7 @@ jobs:
         id: meta
         uses: docker/metadata-action@v4
         with:
-          images: {{ CONTAINER_NAME }}
+          images: {{ env.CONTAINER_NAME }}
       - uses: actions/checkout@v3
       - env:
           TAG: {{ steps.meta.outputs.tags }}
