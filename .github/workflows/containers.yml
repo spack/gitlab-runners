@@ -87,7 +87,6 @@ jobs:
       packages: write
     needs: [ deploy-images ]
     env:
-      TAG: {{ steps.meta.outputs.tags }}
       CONTAINER_NAME: 'ghcr.io/spack/pcluster-amazonlinux-2'
     steps:
       - name: Get Container Tag
@@ -96,7 +95,9 @@ jobs:
         with:
           images: {{ CONTAINER_NAME }}
       - uses: actions/checkout@v3
-      - run: |
+      - env:
+          TAG: {{ steps.meta.outputs.tags }}
+        run: |
           id=$(docker create --platform linux/amd64 ${CONTAINER_NAME}:${TAG})
           mkdir amd64
           docker cp $id:/bootstrap-gcc-cache amd64/bootstrap-gcc-cache
