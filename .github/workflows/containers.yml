@@ -96,14 +96,14 @@ jobs:
           images: ${{ env.CONTAINER_NAME }}
       - uses: actions/checkout@v3
       - env:
-          TAG: ${{ steps.meta.outputs.tags }}
+          CONTAINER_TAG: {{ steps.meta.outputs.tags }}
         run: |
-          id=$(docker create --platform linux/amd64 ${CONTAINER_NAME}:${TAG})
+          id=$(docker create --platform linux/amd64 ${CONTAINER_TAG})
           mkdir amd64
           docker cp $id:/bootstrap-gcc-cache amd64/bootstrap-gcc-cache
           docker rm -v $id
 
-          id=$(docker create --platform linux/arm64 ${CONTAINER_NAME}:${TAG})
+          id=$(docker create --platform linux/arm64 ${CONTAINER_TAG})
           mkdir arm64
           docker cp $id:/bootstrap-gcc-cache arm64/bootstrap-gcc-cache
           docker rm -v $id
