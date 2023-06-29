@@ -96,7 +96,7 @@ jobs:
           images: ${{ env.CONTAINER_NAME }}
       - uses: actions/checkout@v3
       - env:
-          CONTAINER_TAG: {{ steps.meta.outputs.tags }}
+          CONTAINER_TAG: ${{ steps.meta.outputs.tags }}
         run: |
           id=$(docker create --platform linux/amd64 ${CONTAINER_TAG})
           mkdir amd64
