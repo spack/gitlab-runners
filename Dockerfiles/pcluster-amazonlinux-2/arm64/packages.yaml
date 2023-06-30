@@ -1,0 +1,5 @@
+---  # GCC setup for all ARM64 based targets
+packages:
+  gcc:
+    compiler: [gcc]
+    require: "gcc@12 +binutils ^binutils@2.37 target=aarch64"

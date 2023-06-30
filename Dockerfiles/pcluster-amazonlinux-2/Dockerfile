@@ -109,18 +109,25 @@ RUN curl -sOL https://efa-installer.amazonaws.com/aws-efa-installer-${EFA_INSTAL
     && cd .. \
     && rm -rf aws-efa-installer-${EFA_INSTALLER_VERSION}.tar.gz aws-efa-installer
 
-# Bootstrap spack compiler installation
-RUN mkdir -p /bootstrap && \
-    cd /bootstrap && \
-    git clone https://github.com/spack/spack spack \
-    && export SPACK_ROOT=/bootstrap/spack \
-    && . spack/share/spack/setup-env.sh \
-    && curl -sOL https://raw.githubusercontent.com/spack/spack-configs/main/AWS/parallelcluster/postinstall.sh \
-    && /bin/bash postinstall.sh -fg -nointel \
-    && spack clean -a \
-    && cd /bootstrap/spack \
-    && find . -type f -maxdepth 1 -delete \
-    && rm -rf bin lib share var /root/.spack
+# Bootstrap spack compiler installation into the eventual installation tree
+# Defined in spack/share/spack/gitlab/cloud_pipelines/configs/config.yaml
+ARG SPACK_ROOT="/bootstrap-compilers/spack"
+#  commit after https://github.com/spack/spack/pull/34821
+ARG SPACK_COMMIT=f27d012
+ARG TARGETARCH
+COPY Dockerfiles/pcluster-amazonlinux-2/${TARGETARCH}/packages.yaml /root/.spack/packages.yaml
+RUN mkdir -p $(dirname "${SPACK_ROOT}") \
+    && git clone https://github.com/spack/spack "${SPACK_ROOT}" \
+    && pushd "${SPACK_ROOT}" && git checkout ${SPACK_COMMIT} && popd \
+    && cp "${SPACK_ROOT}/share/spack/gitlab/cloud_pipelines/configs/config.yaml" "${SPACK_ROOT}/etc/spack/config.yaml" \
+    && cp "${SPACK_ROOT}/share/spack/gitlab/cloud_pipelines/configs/config.yaml" "/bootstrap/cloud_pipelines-config.yaml" \
+    && . "${SPACK_ROOT}/share/spack/setup-env.sh" \
+    && spack compiler add \
+    && spack external find \
+    && spack tags build-tools | xargs -I {} spack config rm packages:{} \
+    && spack install gcc \
+    && spack buildcache create -a -u /bootstrap-gcc-cache $(spack find --format '/{hash}') \
+    && rm -rf $(dirname "${SPACK_ROOT}") /root/.spack
 
 ENV PATH=/bootstrap/runner/view/bin:$PATH \
     NVIDIA_VISIBLE_DEVICES=all \
