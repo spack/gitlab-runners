@@ -4,10 +4,10 @@ on:
   workflow_dispatch:
   # Build container images on a daily schedule
   schedule:
-    - cron: '11 5 * * *'
+    - cron: "11 5 * * *"
   push:
     branches:
-    - main
+      - main
   pull_request:
     branches:
       - main
@@ -22,7 +22,7 @@ concurrency:
 jobs:
   deploy-windows-images:
     timeout-minutes: 600
-    runs-on: windows-2019
+    runs-on: windows-2022
     permissions:
       packages: write
     strategy:
@@ -30,11 +30,14 @@ jobs:
       # to continue their builds.
       fail-fast: false
       matrix:
-        dockerfile:
-          [
+        dockerfile: [
+            # {
+            #   name: "windows-servercore1809",
+            #   path: "windows-servercore1809.dockerfile",
+            # },
             {
-              name: "windows-servercore1809",
-              path: "windows-servercore1809.dockerfile",
+              name: "windows-servercore21H2",
+              path: "windows-servercore21H2.dockerfile",
             },
           ]
     name: Build ${{ matrix.dockerfile.name }}
