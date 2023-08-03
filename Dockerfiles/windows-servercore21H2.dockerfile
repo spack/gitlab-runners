@@ -9,7 +9,7 @@ RUN Set-ExecutionPolicy Bypass -Scope Process -Force; `
     iex ((New-Object System.Net.WebClient).DownloadString('https://community.chocolatey.org/install.ps1'))
 
 # Install git and python3.11
-RUN choco install -y git.install
+RUN choco install -y git.install gnupg
 RUN choco install -y python --version=3.11.0
 
 # Install spack requirements
