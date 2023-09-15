@@ -33,7 +33,7 @@ COPY Dockerfiles/tutorial-ubuntu-22.04/compilers.yaml Dockerfiles/tutorial-ubunt
 
 RUN --mount=type=cache,target=/root/.spack/cache \
     spack -e . concretize -f && \
-    spack -e . env depfile -o Makefile &&
+    spack -e . env depfile -o Makefile && \
     make -j && \
     spack -e . gc --yes-to-all
 
