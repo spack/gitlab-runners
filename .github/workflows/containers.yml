@@ -48,7 +48,7 @@ jobs:
 
       - name: Set Container Tag
         id: meta
-        uses: docker/metadata-action@v4
+        uses: docker/metadata-action@v5
         with:
           images: ghcr.io/spack/${{ matrix.dockerfile[0] }}
 
@@ -91,7 +91,7 @@ jobs:
     steps:
       - name: Get Container Tag
         id: meta
-        uses: docker/metadata-action@v4
+        uses: docker/metadata-action@v5
         with:
           images: ${{ env.CONTAINER_NAME }}
       - uses: actions/checkout@v4
