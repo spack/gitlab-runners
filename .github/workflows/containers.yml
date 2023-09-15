@@ -44,7 +44,7 @@ jobs:
     name: Build ${{ matrix.dockerfile[0] }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Set Container Tag
         id: meta
@@ -94,7 +94,7 @@ jobs:
         uses: docker/metadata-action@v4
         with:
           images: ${{ env.CONTAINER_NAME }}
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - env:
           CONTAINER_TAG: ${{ steps.meta.outputs.tags }}
         run: |
