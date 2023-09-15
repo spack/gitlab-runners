@@ -26,18 +26,15 @@ RUN apt-get -yqq update && \
 
 RUN mkdir spack && \
     cd spack && \
-    curl -Lfs https://github.com/spack/spack/archive/refs/heads/develop.tar.gz | tar -xzf - --strip-components=1 -C . && \
-    curl -Lfs https://github.com/spack/spack/pull/34926.patch | patch -p1 && \
-    curl -Lfs https://github.com/spack/spack/pull/35078.patch | patch -p1 && \
-    curl -Lfs https://github.com/spack/spack/pull/37405.patch | patch -p1 && \
-    true
+    curl -Lfs https://github.com/spack/spack/archive/refs/heads/develop.tar.gz | tar -xzf - --strip-components=1 -C . 
 
 COPY spack.yaml /root/
 COPY Dockerfiles/tutorial-ubuntu-22.04/compilers.yaml Dockerfiles/tutorial-ubuntu-22.04/packages.yaml /root/spack/etc/spack/
 
 RUN --mount=type=cache,target=/root/.spack/cache \
     spack -e . concretize -f && \
-    spack -e . install --make && \
+    spack -e . env depfile -o Makefile &&
+    make -j && \
     spack -e . gc --yes-to-all
 
 # Remove Spack metadata, python cache and static libraries to save some bytes
