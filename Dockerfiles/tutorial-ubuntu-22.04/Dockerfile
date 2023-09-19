@@ -34,7 +34,7 @@ COPY Dockerfiles/tutorial-ubuntu-22.04/compilers.yaml Dockerfiles/tutorial-ubunt
 RUN --mount=type=cache,target=/root/.spack/cache \
     spack -e . concretize -f && \
     spack -e . env depfile -o Makefile && \
-    make -j && \
+    make -j $(nproc) && \
     spack -e . gc --yes-to-all
 
 # Remove Spack metadata, python cache and static libraries to save some bytes

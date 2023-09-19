@@ -77,7 +77,7 @@ RUN curl -sOL https://github.com/benmcollins/libjwt/archive/refs/tags/v${LIBJWT_
     && cd libjwt-${LIBJWT_VERSION}/ \
     && autoreconf --force --install \
     && ./configure --prefix=/opt/libjwt \
-    && make -j \
+    && make -j $(nproc) \
     && make install && make clean \
     && cd .. \
     && rm -rf v${LIBJWT_VERSION}.tar.gz libjwt-${LIBJWT_VERSION}
@@ -87,7 +87,7 @@ RUN curl -sOL https://github.com/openpmix/openpmix/releases/download/v${PMIX_VER
     && cd pmix-${PMIX_VERSION} \
     && ./autogen.pl \
     && ./configure --prefix=/opt/pmix \
-    && make -j \
+    && make -j $(nproc) \
     && make install && make clean \
     && cd .. \
     && rm -rf pmix-${PMIX_VERSION}.tar.gz pmix-${PMIX_VERSION}
@@ -97,7 +97,7 @@ RUN curl -sOL https://github.com/SchedMD/slurm/archive/slurm-${SLURM_VERSION}.ta
     && tar xf slurm-${SLURM_VERSION}.tar.gz \
     && cd slurm-slurm-${SLURM_VERSION}/ \
     && ./configure --prefix=/opt/slurm --with-pmix=/opt/pmix --with-jwt=/opt/libjwt \
-    && make -j \
+    && make -j $(nproc) \
     && make install && make install-contrib && make clean \
     && cd .. \
     && rm -rf slurm-${SLURM_VERSION}.tar.gz slurm-slurm-${SLURM_VERSION}
