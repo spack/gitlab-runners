@@ -101,11 +101,13 @@ jobs:
           id=$(docker create --platform linux/amd64 ${CONTAINER_TAG})
           mkdir bootstrap-gcc-cache-x86_64
           docker cp $id:/bootstrap-gcc-cache bootstrap-gcc-cache-x86_64
+          docker cp $id:/bootstrap-gcc-cache/build_cache/_pgp/bootstrap-gcc.pub bootstrap-gcc-x86_64.pub
           docker rm -v $id
 
           id=$(docker create --platform linux/arm64 ${CONTAINER_TAG})
           mkdir bootstrap-gcc-cache-aarch64
           docker cp $id:/bootstrap-gcc-cache bootstrap-gcc-cache-aarch64
+          docker cp $id:/bootstrap-gcc-cache/build_cache/_pgp/bootstrap-gcc.pub bootstrap-gcc-aarch64.pub
           docker rm -v $id
 
       - uses: actions/upload-artifact@v3
@@ -118,3 +120,13 @@ jobs:
           name: bootstrap-gcc-cache-aarch64
           path: |
             bootstrap-gcc-cache-aarch64
+      - uses: actions/upload-artifact@v3
+        with:
+          name: bootstrap-gcc-x86_64.pub
+          path: |
+            bootstrap-gcc-x86_64.pub
+      - uses: actions/upload-artifact@v3
+        with:
+          name: bootstrap-gcc-aarch64.pub
+          path: |
+            bootstrap-gcc-aarch64.pub
