@@ -128,18 +128,20 @@ RUN mkdir -p $(dirname "${SPACK_ROOT}") \
     && spack buildcache create -a -u /bootstrap-gcc-cache $(spack find --format '/{hash}') \
     && rm -rf $(dirname "${SPACK_ROOT}") /root/.spack
 
-ARG KEYNAME=bootstrap-gcc
 # Sign the buildcache
+ARG KEYNAME=947B69BDF884C3F6F71046D4C6E606E635F81287
+
 RUN mkdir -p $(dirname "${SPACK_ROOT}") \
     && git clone https://github.com/spack/spack "${SPACK_ROOT}" \
     && pushd "${SPACK_ROOT}" && git checkout ${SPACK_COMMIT} && popd \
     && . "${SPACK_ROOT}/share/spack/setup-env.sh" \
-    && mkdir -p /bootstrap-gcc-cache/build_cache/_pgp \
-    && spack gpg create --export /bootstrap-gcc-cache/build_cache/_pgp/${KEYNAME}.pub ${KEYNAME} stesachs@amazon.com \
+    && secretkey_file=$(mktemp) \
+    && echo "${BOOTSTRAP_GCC_KEY}" > ${secretkey_file} \
+    && spack gpg trust ${secretkey_file} \
+    && rm ${secretkey_file} \
     && ls /bootstrap-gcc-cache/build_cache/*json | xargs -I {} spack gpg sign --output {}.sig --key ${KEYNAME} --clearsign {} \
-    && echo "{\"keys\":{\"${KEYNAME}\":{}}}" > /bootstrap-gcc-cache/build_cache/_pgp/index.json \
     && spack mirror add bootstrap-gcc-cache /bootstrap-gcc-cache \
-    && spack buildcache rebuild-index bootstrap-gcc-cache
+    && spack gpg publish --rebuild-index -m bootstrap-gcc-cache ${KEYNAME}
 
 ENV PATH=/bootstrap/runner/view/bin:$PATH \
     NVIDIA_VISIBLE_DEVICES=all \

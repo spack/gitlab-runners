@@ -79,6 +79,7 @@ jobs:
             ghcr.io/spack/${{ matrix.dockerfile[0] }}:latest
             ${{ steps.meta.outputs.tags }}
           cache-to: type=inline
+          secrets: BOOTSTRAP_GCC_KEY=${{ secrets.bootstrap_gcc_key }}
 
   upload-gcc-buildcache:
     timeout-minutes: 60
