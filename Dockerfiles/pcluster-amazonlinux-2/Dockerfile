@@ -141,7 +141,8 @@ RUN mkdir -p $(dirname "${SPACK_ROOT}") \
     && rm ${secretkey_file} \
     && ls /bootstrap-gcc-cache/build_cache/*json | xargs -I {} spack gpg sign --output {}.sig --key ${KEYNAME} --clearsign {} \
     && spack mirror add bootstrap-gcc-cache /bootstrap-gcc-cache \
-    && spack gpg publish --rebuild-index -m bootstrap-gcc-cache ${KEYNAME}
+    && spack gpg publish --rebuild-index -m bootstrap-gcc-cache ${KEYNAME} \
+    && rm -rf $(dirname "${SPACK_ROOT}") /root/.spack
 
 ENV PATH=/bootstrap/runner/view/bin:$PATH \
     NVIDIA_VISIBLE_DEVICES=all \
