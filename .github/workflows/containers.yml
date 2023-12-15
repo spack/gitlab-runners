@@ -108,12 +108,12 @@ jobs:
           docker cp $id:/bootstrap-gcc-cache bootstrap-gcc-cache-aarch64
           docker rm -v $id
 
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         with:
           name: bootstrap-gcc-cache-x86_64
           path: |
             bootstrap-gcc-cache-x86_64
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         with:
           name: bootstrap-gcc-cache-aarch64
           path: |
