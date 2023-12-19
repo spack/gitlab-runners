@@ -129,8 +129,6 @@ RUN mkdir -p $(dirname "${SPACK_ROOT}") \
     && rm -rf $(dirname "${SPACK_ROOT}") /root/.spack
 
 # Sign the buildcache
-ARG KEYNAME=947B69BDF884C3F6F71046D4C6E606E635F81287
-
 RUN mkdir -p $(dirname "${SPACK_ROOT}") \
     && git clone https://github.com/spack/spack "${SPACK_ROOT}" \
     && pushd "${SPACK_ROOT}" && git checkout ${SPACK_COMMIT} && popd \
@@ -139,9 +137,10 @@ RUN mkdir -p $(dirname "${SPACK_ROOT}") \
     && echo "${BOOTSTRAP_GCC_KEY}" > ${secretkey_file} \
     && spack gpg trust ${secretkey_file} \
     && rm ${secretkey_file} \
-    && ls /bootstrap-gcc-cache/build_cache/*json | xargs -I {} spack gpg sign --output {}.sig --key ${KEYNAME} --clearsign {} \
+    && secretkey_fingerprint=$(GNUPGHOME="${SPACK_ROOT}"/opt/spack/gpg gpg2 -K --with-fingerprint --with-colon | awk -F: '/fpr/{print $10}')
+    && ls /bootstrap-gcc-cache/build_cache/*json | xargs -I {} spack gpg sign --output {}.sig --key ${secretkey_fingerprint} --clearsign {} \
     && spack mirror add bootstrap-gcc-cache /bootstrap-gcc-cache \
-    && spack gpg publish --rebuild-index -m bootstrap-gcc-cache ${KEYNAME} \
+    && spack gpg publish --rebuild-index -m bootstrap-gcc-cache ${secretkey_fingerprint} \
     && rm -rf $(dirname "${SPACK_ROOT}") /root/.spack
 
 ENV PATH=/bootstrap/runner/view/bin:$PATH \
