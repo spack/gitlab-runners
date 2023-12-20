@@ -134,10 +134,11 @@ RUN mkdir -p $(dirname "${SPACK_ROOT}") \
     && pushd "${SPACK_ROOT}" && git checkout ${SPACK_COMMIT} && popd \
     && . "${SPACK_ROOT}/share/spack/setup-env.sh" \
     && secretkey_file=$(mktemp) \
-    && echo "${BOOTSTRAP_GCC_KEY}" > ${secretkey_file} \
+    && echo -e "${BOOTSTRAP_GCC_KEY}" > ${secretkey_file} \
+    && wc ${secretkey_file} \
     && spack gpg trust ${secretkey_file} \
     && rm ${secretkey_file} \
-    && secretkey_fingerprint=$(GNUPGHOME="${SPACK_ROOT}"/opt/spack/gpg gpg2 -K --with-fingerprint --with-colon | awk -F: '/fpr/{print $10}') \
+    && secretkey_fingerprint=$(GNUPGHOME="${SPACK_ROOT}"/opt/spack/gpg gpg2 -K --with-fingerprint --with-colons | awk -F: '/fpr/{print $10}') \
     && ls /bootstrap-gcc-cache/build_cache/*json | xargs -I {} spack gpg sign --output {}.sig --key ${secretkey_fingerprint} --clearsign {} \
     && spack mirror add bootstrap-gcc-cache /bootstrap-gcc-cache \
     && spack gpg publish --rebuild-index -m bootstrap-gcc-cache ${secretkey_fingerprint} \
