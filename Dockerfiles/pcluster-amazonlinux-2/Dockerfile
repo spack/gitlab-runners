@@ -129,12 +129,13 @@ RUN mkdir -p $(dirname "${SPACK_ROOT}") \
     && rm -rf $(dirname "${SPACK_ROOT}") /root/.spack
 
 # Sign the buildcache
+ARG BOOTSTRAP_GCC_KEY
 RUN mkdir -p $(dirname "${SPACK_ROOT}") \
     && git clone https://github.com/spack/spack "${SPACK_ROOT}" \
     && pushd "${SPACK_ROOT}" && git checkout ${SPACK_COMMIT} && popd \
     && . "${SPACK_ROOT}/share/spack/setup-env.sh" \
     && secretkey_file=$(mktemp) \
-    && echo -e "${BOOTSTRAP_GCC_KEY}" > ${secretkey_file} \
+    && echo "${BOOTSTRAP_GCC_KEY}" > ${secretkey_file} \
     && wc ${secretkey_file} \
     && spack gpg trust ${secretkey_file} \
     && rm ${secretkey_file} \
