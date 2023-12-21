@@ -80,7 +80,7 @@ jobs:
             ${{ steps.meta.outputs.tags }}
           cache-to: type=inline
           secrets: |
-            "BOOTSTRAP_GCC_KEY=${{ secrets.BOOTSTRAP_GCC_KEY }}"
+            "bootstrap_gcc_key=${{ secrets.BOOTSTRAP_GCC_KEY }}"
 
   upload-gcc-buildcache:
     timeout-minutes: 60
