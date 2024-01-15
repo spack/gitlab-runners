@@ -90,6 +90,7 @@ jobs:
     needs: [ deploy-images ]
     env:
       CONTAINER_NAME: 'ghcr.io/spack/pcluster-amazonlinux-2'
+      KEY_FINGERPRINT: '5195AD463E705FC2014BFF08FE8754F9EEC75620'
     steps:
       - name: Get Container Tag
         id: meta
@@ -103,13 +104,12 @@ jobs:
           id=$(docker create --platform linux/amd64 ${CONTAINER_TAG})
           mkdir bootstrap-gcc-cache-x86_64
           docker cp $id:/bootstrap-gcc-cache bootstrap-gcc-cache-x86_64
-          docker cp $id:/bootstrap-gcc-cache/build_cache/_pgp/bootstrap-gcc.pub bootstrap-gcc-x86_64.pub
+          docker cp $id:/bootstrap-gcc-cache/build_cache/_pgp/${KEY_FINGERPRINT}.pub ${KEY_FINGERPRINT}.pub
           docker rm -v $id
 
           id=$(docker create --platform linux/arm64 ${CONTAINER_TAG})
           mkdir bootstrap-gcc-cache-aarch64
           docker cp $id:/bootstrap-gcc-cache bootstrap-gcc-cache-aarch64
-          docker cp $id:/bootstrap-gcc-cache/build_cache/_pgp/bootstrap-gcc.pub bootstrap-gcc-aarch64.pub
           docker rm -v $id
 
       - uses: actions/upload-artifact@v3
@@ -124,11 +124,6 @@ jobs:
             bootstrap-gcc-cache-aarch64
       - uses: actions/upload-artifact@v3
         with:
-          name: bootstrap-gcc-x86_64.pub
+          name: ${{ env.KEY_FINGERPRINT }}.pub
           path: |
-            bootstrap-gcc-x86_64.pub
-      - uses: actions/upload-artifact@v3
-        with:
-          name: bootstrap-gcc-aarch64.pub
-          path: |
-            bootstrap-gcc-aarch64.pub
+             ${KEY_FINGERPRINT}.pub
