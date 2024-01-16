@@ -97,33 +97,18 @@ jobs:
         uses: docker/metadata-action@v5
         with:
           images: ${{ env.CONTAINER_NAME }}
-      - uses: actions/checkout@v4
-      - env:
+      - name: Checkout Container
+        uses: actions/checkout@v4
+      - name: Copy from container to local disk
+        env:
           CONTAINER_TAG: ${{ steps.meta.outputs.tags }}
         run: |
           id=$(docker create --platform linux/amd64 ${CONTAINER_TAG})
-          mkdir bootstrap-gcc-cache-x86_64
-          docker cp $id:/bootstrap-gcc-cache bootstrap-gcc-cache-x86_64
           docker cp $id:/bootstrap-gcc-cache/build_cache/_pgp/${KEY_FINGERPRINT}.pub ${KEY_FINGERPRINT}.pub
           docker rm -v $id
 
-          id=$(docker create --platform linux/arm64 ${CONTAINER_TAG})
-          mkdir bootstrap-gcc-cache-aarch64
-          docker cp $id:/bootstrap-gcc-cache bootstrap-gcc-cache-aarch64
-          docker rm -v $id
-
-      - uses: actions/upload-artifact@v3
-        with:
-          name: bootstrap-gcc-cache-x86_64
-          path: |
-            bootstrap-gcc-cache-x86_64
-      - uses: actions/upload-artifact@v3
-        with:
-          name: bootstrap-gcc-cache-aarch64
-          path: |
-            bootstrap-gcc-cache-aarch64
-      - uses: actions/upload-artifact@v3
+      - name: Upload public key to Github artifacts
+        uses: actions/upload-artifact@v3
         with:
           name: ${{ env.KEY_FINGERPRINT }}.pub
-          path: |
-             ${KEY_FINGERPRINT}.pub
+          path: ${{ env.KEY_FINGERPRINT }}.pub
