@@ -134,7 +134,6 @@ RUN --mount=type=secret,id=bootstrap_gcc_key \
     && git clone https://github.com/spack/spack "${SPACK_ROOT}" \
     && pushd "${SPACK_ROOT}" && git checkout ${SPACK_COMMIT} && popd \
     && . "${SPACK_ROOT}/share/spack/setup-env.sh" \
-    && wc /run/secrets/bootstrap_gcc_key \
     && spack gpg trust /run/secrets/bootstrap_gcc_key \
     && secretkey_fingerprint=$(GNUPGHOME="${SPACK_ROOT}"/opt/spack/gpg gpg2 -K --with-fingerprint --with-colons | awk -F: '/fpr/{print $10}') \
     && ls /bootstrap-gcc-cache/build_cache/*json | xargs -I {} spack gpg sign --output {}.sig --key ${secretkey_fingerprint} --clearsign {} \
