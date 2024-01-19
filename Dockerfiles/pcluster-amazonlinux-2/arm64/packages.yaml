@@ -2,4 +2,4 @@
 packages:
   gcc:
     compiler: [gcc]
-    require: "gcc@12 +binutils ^binutils@2.37 target=aarch64"
+    require: "gcc@12 +strip +binutils ^binutils@2.37 target=aarch64"
