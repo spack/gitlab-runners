@@ -139,6 +139,7 @@ RUN --mount=type=secret,id=bootstrap_gcc_key \
     && ls /bootstrap-gcc-cache/build_cache/*json | xargs -I {} spack gpg sign --output {}.sig --key ${secretkey_fingerprint} --clearsign {} \
     && spack mirror add bootstrap-gcc-cache /bootstrap-gcc-cache \
     && spack gpg publish --rebuild-index -m bootstrap-gcc-cache ${secretkey_fingerprint} \
+    && spack buildcache rebuild-index bootstrap-gcc-cache \
     && rm -rf $(dirname "${SPACK_ROOT}") /root/.spack
 
 ENV PATH=/bootstrap/runner/view/bin:$PATH \
