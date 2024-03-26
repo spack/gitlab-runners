@@ -3,6 +3,9 @@ FROM mcr.microsoft.com/dotnet/framework/sdk:4.8-windowsservercore-ltsc2022
 
 SHELL ["powershell", "-Command", "$ErrorActionPreference = 'Stop'; $ProgressPreference = 'Continue'; $verbosePreference='Continue';"]
 
+# Install SSL certs from CA
+RUN (certutil -generateSSTFromWU roots.sst) -AND (certutil -addstore -f root roots.sst) -AND (del roots.sst)
+
 # Install chocolatey
 RUN Set-ExecutionPolicy Bypass -Scope Process -Force; `
     [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072; `
