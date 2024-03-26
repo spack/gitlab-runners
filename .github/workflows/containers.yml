@@ -19,7 +19,7 @@
 #   group: ci-${{github.ref}}-${{github.event.pull_request.number || github.run_number}}
 #   cancel-in-progress: true
 
-jobs:
+# jobs:
   # deploy-linux-images:
   #   timeout-minutes: 600
   #   runs-on: self-hosted
@@ -113,58 +113,58 @@ jobs:
   #         name: ${{ env.KEY_FINGERPRINT }}.pub
   #         path: ${{ env.KEY_FINGERPRINT }}.pub
 
-  deploy-windows-images:
-    timeout-minutes: 600
-    runs-on: windows-2019
-    permissions:
-      packages: write
-    strategy:
-      # Even if one container fails to build we still want the others
-      # to continue their builds.
-      fail-fast: false
-      matrix:
-        dockerfile:
-          [
-            {
-              name: "windows-servercore1809",
-              path: "windows-servercore1809.dockerfile",
-            },
-          ]
-    name: Build ${{ matrix.dockerfile.name }}
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v3
+#   deploy-windows-images:
+#     timeout-minutes: 600
+#     runs-on: windows-2019
+#     permissions:
+#       packages: write
+#     strategy:
+#       # Even if one container fails to build we still want the others
+#       # to continue their builds.
+#       fail-fast: false
+#       matrix:
+#         dockerfile:
+#           [
+#             {
+#               name: "windows-servercore1809",
+#               path: "windows-servercore1809.dockerfile",
+#             },
+#           ]
+#     name: Build ${{ matrix.dockerfile.name }}
+#     steps:
+#       - name: Checkout
+#         uses: actions/checkout@v3
 
-      - name: Set Container Tag
-        id: meta
-        uses: docker/metadata-action@v4
-        with:
-          images: ghcr.io/spack/${{ matrix.dockerfile.name }}
-
-#       - name: Log in to GitHub Container Registry
-#         uses: docker/login-action@v2
+#       - name: Set Container Tag
+#         id: meta
+#         uses: docker/metadata-action@v4
 #         with:
-#           registry: ghcr.io
-#           username: ${{ github.actor }}
-#           password: ${{ secrets.GITHUB_TOKEN }}
+#           images: ghcr.io/spack/${{ matrix.dockerfile.name }}
 
-      - name: Docker Build
-        run: docker build -f ${{ matrix.path }} --build-arg -t ${{ steps.meta.outputs.tags }} .
+# #       - name: Log in to GitHub Container Registry
+# #         uses: docker/login-action@v2
+# #         with:
+# #           registry: ghcr.io
+# #           username: ${{ github.actor }}
+# #           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Docker Push
-        run: docker push ${{ steps.meta.outputs.tags }}
+#       - name: Docker Build
+#         run: docker build -f ${{ matrix.path }} --build-arg -t ${{ steps.meta.outputs.tags }} .
 
-      - name: Build & Deploy ${{ matrix.dockerfile[1] }}
-        uses: docker/build-push-action@v4
-        with:
-          file: Dockerfiles/${{ matrix.dockerfile[1] }}
-          platforms: ${{ matrix.dockerfile[2] }}
-          push: true
-          tags: ${{ steps.meta.outputs.tags }}
-          labels: ${{ steps.meta.outputs.labels }}
-          cache-from: |
-            ghcr.io/spack/${{ matrix.dockerfile[0] }}:nightly
-            ghcr.io/spack/${{ matrix.dockerfile[0] }}:main
-            ghcr.io/spack/${{ matrix.dockerfile[0] }}:latest
-            ${{ steps.meta.outputs.tags }}
-          cache-to: type=inline
+#       - name: Docker Push
+#         run: docker push ${{ steps.meta.outputs.tags }}
+
+#       - name: Build & Deploy ${{ matrix.dockerfile[1] }}
+#         uses: docker/build-push-action@v4
+#         with:
+#           file: Dockerfiles/${{ matrix.dockerfile[1] }}
+#           platforms: ${{ matrix.dockerfile[2] }}
+#           push: true
+#           tags: ${{ steps.meta.outputs.tags }}
+#           labels: ${{ steps.meta.outputs.labels }}
+#           cache-from: |
+#             ghcr.io/spack/${{ matrix.dockerfile[0] }}:nightly
+#             ghcr.io/spack/${{ matrix.dockerfile[0] }}:main
+#             ghcr.io/spack/${{ matrix.dockerfile[0] }}:latest
+#             ${{ steps.meta.outputs.tags }}
+#           cache-to: type=inline
