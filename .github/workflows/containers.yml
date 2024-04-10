@@ -35,6 +35,7 @@ jobs:
       matrix:
         dockerfile: [[e4s-ubuntu-18.04, e4s-ubuntu-18.04.dockerfile, 'linux/amd64,linux/ppc64le,linux/arm64'],
                      [e4s-ubuntu-20.04, e4s-ubuntu-20.04.dockerfile, 'linux/amd64,linux/ppc64le,linux/arm64'],
+                     [ubuntu-22.04, ubuntu-22.04.dockerfile, 'linux/amd64,linux/ppc64le,linux/arm64'],
                      [linux-ubuntu22.04-x86_64_v2, linux-ubuntu22.04-x86_64_v2/Dockerfile, 'linux/amd64'],
                      [tutorial-ubuntu-22.04, tutorial-ubuntu-22.04/Dockerfile, 'linux/amd64'],
                      [e4s-amazonlinux-2, e4s-amazonlinux-2.dockerfile, 'linux/amd64,linux/arm64'],
