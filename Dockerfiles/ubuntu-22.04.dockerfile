@@ -34,7 +34,6 @@ RUN apt update -y \
   patchelf \
   pciutils \
   python3-pip \
-  rocm \
   rsync \
   unzip \
   wget \
