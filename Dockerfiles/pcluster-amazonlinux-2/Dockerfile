@@ -123,6 +123,9 @@ RUN mkdir -p $(dirname "${SPACK_ROOT}") \
     && . "${SPACK_ROOT}/share/spack/setup-env.sh" \
     && spack compiler add \
     && spack external find \
+    && spack install intel-oneapi-compilers \
+    && spack load intel-oneapi-compilers \
+    && spack compiler add \
     && spack tags build-tools | xargs -I {} spack config rm packages:{} \
     && spack install gcc \
     && spack buildcache create -a -u /bootstrap-gcc-cache $(spack find --format '/{hash}') \
