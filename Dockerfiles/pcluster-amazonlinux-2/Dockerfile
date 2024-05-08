@@ -148,6 +148,7 @@ RUN if [[ "amd64" == "${TARGETARCH}" ]]; then mkdir -p $(dirname "${SPACK_ROOT}"
     && rm -rf $(find $(spack find --format '{prefix}' intel-oneapi-compilers) -type d -name 'conda_channel') \
     && rm -rf $(find $(spack find --format '{prefix}' intel-oneapi-compilers) -type d -name 'debugger') \
     && rm -rf $(find $(spack find --format '{prefix}' intel-oneapi-compilers) -type d -name '*32*') \
+    && rm -rf $(find $(spack find --format '{prefix}' intel-oneapi-compilers) -type d -name 'oclfpga') \
     && rm -rf /opt/intel /tmp/*
     && spack clean -a \
     && rm -rf /root/.spack ; fi
