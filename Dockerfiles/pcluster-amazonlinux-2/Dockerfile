@@ -128,9 +128,21 @@ RUN mkdir -p $(dirname "${SPACK_ROOT}") \
     && spack buildcache create -a -u /bootstrap-gcc-cache $(spack find --format '/{hash}') \
     && rm -rf $(dirname "${SPACK_ROOT}") /root/.spack
 
+# Sign the buildcache
+RUN --mount=type=secret,id=bootstrap_gcc_key \
+    mkdir -p $(dirname "${SPACK_ROOT}") \
+    && git clone https://github.com/spack/spack "${SPACK_ROOT}" \
+    && pushd "${SPACK_ROOT}" && git checkout ${SPACK_COMMIT} && popd \
+    && . "${SPACK_ROOT}/share/spack/setup-env.sh" \
+    && spack gpg trust /run/secrets/bootstrap_gcc_key \
+    && secretkey_fingerprint=$(GNUPGHOME="${SPACK_ROOT}"/opt/spack/gpg gpg2 -K --with-fingerprint --with-colons | awk -F: '/fpr/{print $10}') \
+    && ls /bootstrap-gcc-cache/build_cache/*json | xargs -I {} spack gpg sign --output {}.sig --key ${secretkey_fingerprint} --clearsign {} \
+    && spack mirror add bootstrap-gcc-cache /bootstrap-gcc-cache \
+    && spack gpg publish --rebuild-index -m bootstrap-gcc-cache ${secretkey_fingerprint} \
+    && rm -rf $(dirname "${SPACK_ROOT}") /root/.spack
+
 # Add intel compiler by using a constant git tag. Leave the spack installation to enable
 # `spack install intel-oneapi-compiler` during container bootstrap.
-ARG SPACK_ROOT="/bootstrap-compilers/spack"
 ARG SPACK_TAG="develop-2023-08-06"
 COPY Dockerfiles/pcluster-amazonlinux-2/${TARGETARCH}/packages.yaml /root/.spack/packages.yaml
 RUN if [[ "amd64" == "${TARGETARCH}" ]]; then mkdir -p $(dirname "${SPACK_ROOT}") \
@@ -152,19 +164,6 @@ RUN if [[ "amd64" == "${TARGETARCH}" ]]; then mkdir -p $(dirname "${SPACK_ROOT}"
     && rm -rf /opt/intel /tmp/* \
     && spack clean -a \
     && rm -rf /root/.spack ; fi
-
-# Sign the buildcache
-RUN --mount=type=secret,id=bootstrap_gcc_key \
-    mkdir -p $(dirname "${SPACK_ROOT}") \
-    && git clone https://github.com/spack/spack "${SPACK_ROOT}" \
-    && pushd "${SPACK_ROOT}" && git checkout ${SPACK_COMMIT} && popd \
-    && . "${SPACK_ROOT}/share/spack/setup-env.sh" \
-    && spack gpg trust /run/secrets/bootstrap_gcc_key \
-    && secretkey_fingerprint=$(GNUPGHOME="${SPACK_ROOT}"/opt/spack/gpg gpg2 -K --with-fingerprint --with-colons | awk -F: '/fpr/{print $10}') \
-    && ls /bootstrap-gcc-cache/build_cache/*json | xargs -I {} spack gpg sign --output {}.sig --key ${secretkey_fingerprint} --clearsign {} \
-    && spack mirror add bootstrap-gcc-cache /bootstrap-gcc-cache \
-    && spack gpg publish --rebuild-index -m bootstrap-gcc-cache ${secretkey_fingerprint} \
-    && rm -rf $(dirname "${SPACK_ROOT}") /root/.spack
 
 ENV PATH=/bootstrap/runner/view/bin:$PATH \
     NVIDIA_VISIBLE_DEVICES=all \
