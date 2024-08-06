@@ -34,6 +34,7 @@ RUN apt update -y \
   patchelf \
   pciutils \
   python3-pip \
+  python3-venv \
   rsync \
   unzip \
   wget \
