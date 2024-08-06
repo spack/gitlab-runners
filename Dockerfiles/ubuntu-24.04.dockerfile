@@ -44,7 +44,7 @@ RUN apt update -y \
   && ln -s /usr/bin/gpg /usr/bin/gpg2 \
   && ln -s `which python3` /usr/bin/python
 
-RUN python -m pip install --user --upgrade pip setuptools wheel \
+RUN python -m pip install --user pip setuptools wheel \
  && python -m pip install --user gnureadline boto3 pyyaml pytz minio requests clingo \
  && rm -rf ~/.cache
 
