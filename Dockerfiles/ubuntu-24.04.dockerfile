@@ -34,15 +34,6 @@ RUN apt update -y \
   patchelf \
   pciutils \
   python3-pip \
-  python3-setuptools \
-  python3-wheel \
-  python3-gnureadline \
-  python3-boto3 \
-  python3-pyyaml \
-  python3-pytz \
-  python3-minio \
-  python3-requests \
-  python3-clingo \
   rsync \
   unzip \
   wget \
@@ -52,6 +43,13 @@ RUN apt update -y \
   && apt clean \
   && ln -s /usr/bin/gpg /usr/bin/gpg2 \
   && ln -s `which python3` /usr/bin/python
+
+ENV VIRTUAL_ENV=/opt/view
+RUN python3 -m venv /opt/venv
+ENV PATH="$VIRTUAL_ENV/bin:$PATH"
+RUN python3 -m pip install --upgrade pip setuptools wheel \
+ && python3 -m pip install gnureadline boto3 pyyaml pytz minio requests clingo \
+ && rm -rf ~/.cache
 
 CMD ["/bin/bash"]
 
