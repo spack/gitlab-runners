@@ -46,10 +46,10 @@ RUN apt update -y \
   && ln -s `which python3` /usr/bin/python
 
 ENV VIRTUAL_ENV=/opt/view
-RUN python3 -m venv /opt/venv
+RUN python -m venv /opt/venv
 ENV PATH="$VIRTUAL_ENV/bin:$PATH"
-RUN python3 -m pip install --upgrade pip setuptools wheel \
- && python3 -m pip install gnureadline boto3 pyyaml pytz minio requests clingo \
+RUN python -m pip install --upgrade pip setuptools wheel \
+ && python -m pip install gnureadline boto3 pyyaml pytz minio requests clingo \
  && rm -rf ~/.cache
 
 CMD ["/bin/bash"]
