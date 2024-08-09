@@ -33,7 +33,8 @@ RUN apt update -y \
   patch \
   patchelf \
   pciutils \
-  python3-pip \
+  python3-full \
+  python3-dev \
   rsync \
   unzip \
   wget \
@@ -44,8 +45,11 @@ RUN apt update -y \
   && ln -s /usr/bin/gpg /usr/bin/gpg2 \
   && ln -s `which python3` /usr/bin/python
 
-RUN python -m pip install --upgrade pip setuptools wheel \
- && python -m pip install gnureadline boto3 pyyaml pytz minio requests clingo \
+ENV VIRTUAL_ENV=/opt/venv
+RUN python3 -m venv $VIRTUAL_ENV
+ENV PATH="$VIRTUAL_ENV/bin:$PATH"
+RUN python3 -m pip install --upgrade pip setuptools wheel \
+ && python3 -m pip install gnureadline boto3 pyyaml pytz minio requests clingo \
  && rm -rf ~/.cache
 
 CMD ["/bin/bash"]
