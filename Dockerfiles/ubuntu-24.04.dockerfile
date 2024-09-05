@@ -38,7 +38,7 @@ RUN apt update -y \
   rsync \
   unzip \
   wget \
-  xz \
+  xz-utils \
   zlib1g-dev \
   && locale-gen en_US.UTF-8 \
   && apt autoremove --purge \
