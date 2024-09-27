@@ -139,9 +139,9 @@ RUN --mount=type=secret,id=bootstrap_gcc_key \
     && spack gpg publish --rebuild-index -m bootstrap-gcc-cache ${secretkey_fingerprint} \
     && rm -rf $(dirname "${SPACK_ROOT}") /root/.spack
 
-# Add intel compiler by using a constant git tag. Leave the spack installation to enable
-# `spack install intel-oneapi-compiler` during container bootstrap.
-ARG SPACK_TAG="develop-2023-08-06"
+# Add oneapi compiler into container. The stack can pick up the compilers by using ${SPACK_ROOT}/etc/spack/compilers.yaml
+# intel-oneapi-compiler@2024.1.0 is the last version compatible with AL2 glibc 2.26
+ARG SPACK_TAG="v0.22.0"
 COPY Dockerfiles/pcluster-amazonlinux-2/${TARGETARCH}/packages.yaml /root/.spack/packages.yaml
 RUN if [[ "amd64" == "${TARGETARCH}" ]]; then mkdir -p $(dirname "${SPACK_ROOT}") \
     && git clone --depth=1 -b ${SPACK_TAG} https://github.com/spack/spack.git "${SPACK_ROOT}" \
@@ -150,11 +150,10 @@ RUN if [[ "amd64" == "${TARGETARCH}" ]]; then mkdir -p $(dirname "${SPACK_ROOT}"
     && . "${SPACK_ROOT}/share/spack/setup-env.sh" \
     && spack load gcc \
     && spack compiler add --scope site \
-    && spack external find --scope site --tag core-packages \
     && cd "${SPACK_ROOT}" \
-    && curl -sL https://github.com/spack/spack/pull/40557.patch | patch -p1 \
-    && curl -sL https://github.com/spack/spack/pull/40561.patch | patch -p1 \
-    && spack install intel-oneapi-compilers-classic \
+    && spack install intel-oneapi-compilers@2024.1.0 \
+    && . "$(spack location -i intel-oneapi-compilers)"/setvars.sh \
+    && spack compiler add --scope site \
     && rm -rf $(find $(spack find --format '{prefix}' intel-oneapi-compilers) -type d -name 'conda_channel') \
     && rm -rf $(find $(spack find --format '{prefix}' intel-oneapi-compilers) -type d -name 'debugger') \
     && rm -rf $(find $(spack find --format '{prefix}' intel-oneapi-compilers) -type d -name '*32*') \
