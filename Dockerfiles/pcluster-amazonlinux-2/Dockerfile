@@ -111,13 +111,11 @@ RUN curl -sOL https://efa-installer.amazonaws.com/aws-efa-installer-${EFA_INSTAL
 # Bootstrap spack compiler installation into the eventual installation tree
 # Defined in spack/share/spack/gitlab/cloud_pipelines/configs/config.yaml
 ARG SPACK_ROOT="/bootstrap-compilers/spack"
-#  commit after https://github.com/spack/spack/pull/34821
-ARG SPACK_COMMIT=f27d012
+ARG SPACK_TAG="v0.22.2"
 ARG TARGETARCH
 COPY Dockerfiles/pcluster-amazonlinux-2/${TARGETARCH}/packages.yaml /root/.spack/packages.yaml
 RUN mkdir -p $(dirname "${SPACK_ROOT}") \
-    && git clone https://github.com/spack/spack "${SPACK_ROOT}" \
-    && pushd "${SPACK_ROOT}" && git checkout ${SPACK_COMMIT} && popd \
+    && git clone -b ${SPACK_TAG} https://github.com/spack/spack "${SPACK_ROOT}" \
     && cp "${SPACK_ROOT}/share/spack/gitlab/cloud_pipelines/configs/config.yaml" "${SPACK_ROOT}/etc/spack/config.yaml" \
     && cp "${SPACK_ROOT}/share/spack/gitlab/cloud_pipelines/configs/config.yaml" "/bootstrap/cloud_pipelines-config.yaml" \
     && . "${SPACK_ROOT}/share/spack/setup-env.sh" \
@@ -129,8 +127,7 @@ RUN mkdir -p $(dirname "${SPACK_ROOT}") \
 # Sign the buildcache
 RUN --mount=type=secret,id=bootstrap_gcc_key \
     mkdir -p $(dirname "${SPACK_ROOT}") \
-    && git clone https://github.com/spack/spack "${SPACK_ROOT}" \
-    && pushd "${SPACK_ROOT}" && git checkout ${SPACK_COMMIT} && popd \
+    && git clone -b ${SPACK_TAG} https://github.com/spack/spack "${SPACK_ROOT}" \
     && . "${SPACK_ROOT}/share/spack/setup-env.sh" \
     && spack gpg trust /run/secrets/bootstrap_gcc_key \
     && secretkey_fingerprint=$(GNUPGHOME="${SPACK_ROOT}"/opt/spack/gpg gpg2 -K --with-fingerprint --with-colons | awk -F: '/fpr/{print $10}') \
@@ -141,7 +138,6 @@ RUN --mount=type=secret,id=bootstrap_gcc_key \
 
 # Add oneapi compiler into container. The stack can pick up the compilers by using ${SPACK_ROOT}/etc/spack/compilers.yaml
 # intel-oneapi-compiler@2024.1.0 is the last version compatible with AL2 glibc 2.26
-ARG SPACK_TAG="v0.22.0"
 COPY Dockerfiles/pcluster-amazonlinux-2/${TARGETARCH}/packages.yaml /root/.spack/packages.yaml
 RUN if [[ "amd64" == "${TARGETARCH}" ]]; then mkdir -p $(dirname "${SPACK_ROOT}") \
     && git clone --depth=1 -b ${SPACK_TAG} https://github.com/spack/spack.git "${SPACK_ROOT}" \
