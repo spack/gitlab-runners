@@ -111,7 +111,7 @@ RUN curl -sOL https://efa-installer.amazonaws.com/aws-efa-installer-${EFA_INSTAL
 # Bootstrap spack compiler installation into the eventual installation tree
 # Defined in spack/share/spack/gitlab/cloud_pipelines/configs/config.yaml
 ARG SPACK_ROOT="/bootstrap-compilers/spack"
-ARG SPACK_TAG="v0.22.2"
+ARG SPACK_TAG="develop-2024-07-07"
 ARG TARGETARCH
 COPY Dockerfiles/pcluster-amazonlinux-2/${TARGETARCH}/packages.yaml /root/.spack/packages.yaml
 RUN mkdir -p $(dirname "${SPACK_ROOT}") \
