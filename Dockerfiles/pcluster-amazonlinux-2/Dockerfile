@@ -150,10 +150,10 @@ RUN if [[ "amd64" == "${TARGETARCH}" ]]; then mkdir -p $(dirname "${SPACK_ROOT}"
     && spack install intel-oneapi-compilers@2024.1.0 \
     && . "$(spack location -i intel-oneapi-compilers)"/setvars.sh \
     && spack compiler add --scope site \
-    && rm -rf $(find $(spack find --format '{prefix}' intel-oneapi-compilers) -type d -name 'conda_channel') \
-    && rm -rf $(find $(spack find --format '{prefix}' intel-oneapi-compilers) -type d -name 'debugger') \
-    && rm -rf $(find $(spack find --format '{prefix}' intel-oneapi-compilers) -type d -name '*32*') \
-    && rm -rf $(find $(spack find --format '{prefix}' intel-oneapi-compilers) -type d -name 'oclfpga') \
+    && rm -rf $(find $(spack find --format '{prefix}' intel-oneapi-compilers) -mindepth 1 -type d -name 'conda_channel') \
+    && rm -rf $(find $(spack find --format '{prefix}' intel-oneapi-compilers) -mindepth 1 -type d -name 'debugger') \
+    && rm -rf $(find $(spack find --format '{prefix}' intel-oneapi-compilers) -mindepth 1 -type d -name '*32*') \
+    && rm -rf $(find $(spack find --format '{prefix}' intel-oneapi-compilers) -mindepth 1 -type d -name 'oclfpga') \
     && rm -rf /opt/intel /tmp/* \
     && spack clean -a \
     && rm -rf /root/.spack ; fi
