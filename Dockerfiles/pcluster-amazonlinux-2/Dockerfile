@@ -111,19 +111,15 @@ RUN curl -sOL https://efa-installer.amazonaws.com/aws-efa-installer-${EFA_INSTAL
 # Bootstrap spack compiler installation into the eventual installation tree
 # Defined in spack/share/spack/gitlab/cloud_pipelines/configs/config.yaml
 ARG SPACK_ROOT="/bootstrap-compilers/spack"
-#  commit after https://github.com/spack/spack/pull/34821
-ARG SPACK_COMMIT=f27d012
+ARG SPACK_TAG="develop-2024-07-07"
 ARG TARGETARCH
 COPY Dockerfiles/pcluster-amazonlinux-2/${TARGETARCH}/packages.yaml /root/.spack/packages.yaml
 RUN mkdir -p $(dirname "${SPACK_ROOT}") \
-    && git clone https://github.com/spack/spack "${SPACK_ROOT}" \
-    && pushd "${SPACK_ROOT}" && git checkout ${SPACK_COMMIT} && popd \
+    && git clone -b ${SPACK_TAG} https://github.com/spack/spack "${SPACK_ROOT}" \
     && cp "${SPACK_ROOT}/share/spack/gitlab/cloud_pipelines/configs/config.yaml" "${SPACK_ROOT}/etc/spack/config.yaml" \
     && cp "${SPACK_ROOT}/share/spack/gitlab/cloud_pipelines/configs/config.yaml" "/bootstrap/cloud_pipelines-config.yaml" \
     && . "${SPACK_ROOT}/share/spack/setup-env.sh" \
     && spack compiler add \
-    && spack external find \
-    && spack tags build-tools | xargs -I {} spack config rm packages:{} \
     && spack install gcc \
     && spack buildcache create -a -u /bootstrap-gcc-cache $(spack find --format '/{hash}') \
     && rm -rf $(dirname "${SPACK_ROOT}") /root/.spack
@@ -131,8 +127,7 @@ RUN mkdir -p $(dirname "${SPACK_ROOT}") \
 # Sign the buildcache
 RUN --mount=type=secret,id=bootstrap_gcc_key \
     mkdir -p $(dirname "${SPACK_ROOT}") \
-    && git clone https://github.com/spack/spack "${SPACK_ROOT}" \
-    && pushd "${SPACK_ROOT}" && git checkout ${SPACK_COMMIT} && popd \
+    && git clone -b ${SPACK_TAG} https://github.com/spack/spack "${SPACK_ROOT}" \
     && . "${SPACK_ROOT}/share/spack/setup-env.sh" \
     && spack gpg trust /run/secrets/bootstrap_gcc_key \
     && secretkey_fingerprint=$(GNUPGHOME="${SPACK_ROOT}"/opt/spack/gpg gpg2 -K --with-fingerprint --with-colons | awk -F: '/fpr/{print $10}') \
@@ -140,6 +135,28 @@ RUN --mount=type=secret,id=bootstrap_gcc_key \
     && spack mirror add bootstrap-gcc-cache /bootstrap-gcc-cache \
     && spack gpg publish --rebuild-index -m bootstrap-gcc-cache ${secretkey_fingerprint} \
     && rm -rf $(dirname "${SPACK_ROOT}") /root/.spack
+
+# Add oneapi compiler into container. The stack can pick up the compilers by using ${SPACK_ROOT}/etc/spack/compilers.yaml
+# intel-oneapi-compiler@2024.1.0 is the last version compatible with AL2 glibc 2.26
+COPY Dockerfiles/pcluster-amazonlinux-2/${TARGETARCH}/packages.yaml /root/.spack/packages.yaml
+RUN if [[ "amd64" == "${TARGETARCH}" ]]; then mkdir -p $(dirname "${SPACK_ROOT}") \
+    && git clone --depth=1 -b ${SPACK_TAG} https://github.com/spack/spack.git "${SPACK_ROOT}" \
+    && cp "${SPACK_ROOT}/share/spack/gitlab/cloud_pipelines/configs/config.yaml" "${SPACK_ROOT}/etc/spack/config.yaml" \
+    && cp "${SPACK_ROOT}/share/spack/gitlab/cloud_pipelines/configs/config.yaml" "/bootstrap/cloud_pipelines-config.yaml" \
+    && . "${SPACK_ROOT}/share/spack/setup-env.sh" \
+    && spack load gcc \
+    && spack compiler add --scope site \
+    && cd "${SPACK_ROOT}" \
+    && spack install intel-oneapi-compilers@2024.1.0 \
+    && . "$(spack location -i intel-oneapi-compilers)"/setvars.sh \
+    && spack compiler add --scope site \
+    && rm -rf $(find $(spack find --format '{prefix}' intel-oneapi-compilers) -mindepth 1 -type d -name 'conda_channel') \
+    && rm -rf $(find $(spack find --format '{prefix}' intel-oneapi-compilers) -mindepth 1 -type d -name 'debugger') \
+    && rm -rf $(find $(spack find --format '{prefix}' intel-oneapi-compilers) -mindepth 1 -type d -name '*32*') \
+    && rm -rf $(find $(spack find --format '{prefix}' intel-oneapi-compilers) -mindepth 1 -type d -name 'oclfpga') \
+    && rm -rf /opt/intel /tmp/* \
+    && spack clean -a \
+    && rm -rf /root/.spack ; fi
 
 ENV PATH=/bootstrap/runner/view/bin:$PATH \
     NVIDIA_VISIBLE_DEVICES=all \
