@@ -1,0 +1,24 @@
+spack:
+  view: 
+    default:
+      root: $BOOTSTRAP_DIR/view
+      link: roots
+
+  config:
+    install_tree:
+      root: $BOOTSTRAP_DIR/install
+
+  concretizer:
+    reuse: true
+    unify: when_possible
+
+  packages:
+    all:
+      require: '%gcc target=x86_64'
+
+  specs:
+  - gmake
+  - gnupg
+  - libtree
+  - patchelf
+  - git
