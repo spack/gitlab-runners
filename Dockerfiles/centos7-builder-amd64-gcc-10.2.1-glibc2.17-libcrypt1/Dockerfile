@@ -56,3 +56,4 @@ RUN echo source scl_source enable devtoolset-10 >> /etc/bashrc \
  && echo export PATH=$BOOTSTRAP_DIR/view/bin:'${PATH}' >> /etc/bashrc
 
 ENV PATH=$BOOTSTRAP_DIR/view/bin:$PATH
+ENV LC_ALL=en_US.UTF-8
