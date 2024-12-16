@@ -1,0 +1,12 @@
+._view
+.compiler
+.env
+.image1
+.image2
+.spack-env
+.stage1
+.stage2
+cache/
+spack/
+store/
+view

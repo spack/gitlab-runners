@@ -1,0 +1,43 @@
+spack:
+  view:
+    default:
+      root: view
+      link: run
+  specs:
+  - 'gmake@4.4:'
+  - awscli
+  - binutils +ld +gas
+  - clingo-bootstrap@spack +optimized
+  - curl
+  - file
+  - gcc@10 +profiled +binutils build_type=Release
+  - git
+  - gnupg
+  - gzip
+  - lz4
+  - lzo
+  - patch
+  - patchelf
+  - py-boto3
+  - python@3.11 +optimizations
+  - tar
+  - unzip
+  - vim
+  - xz
+  - zstd
+  config:
+    install_tree:
+      root: $env/store
+  concretizer:
+    unify: true
+  packages:
+    all:
+      require: '%gcc@10 target=x86_64_v3'
+  mirrors:
+    spack:
+      url: oci://ghcr.io/spack/centos-7-cache
+      signed: false
+      push:
+        access_pair:
+          id_variable: GITHUB_USER
+          secret_variable: GITHUB_TOKEN
