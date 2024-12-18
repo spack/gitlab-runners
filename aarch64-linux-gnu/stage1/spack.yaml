@@ -1,0 +1,37 @@
+spack:
+  view: false
+  specs:
+  - binutils +ld +gas
+  - gcc@13 +profiled +binutils build_type=Release
+  - 'gmake@4.4:'
+  config:
+    install_tree:
+      root: $env/store
+  concretizer:
+    unify: true
+  mirrors:
+    spack:
+      url: oci://ghcr.io/spack/rhel-8-cache
+      signed: false
+      push:
+        access_pair:
+          id_variable: GITHUB_USER
+          secret_variable: GITHUB_TOKEN
+  packages:
+    all:
+      require:
+      - target=aarch64
+  compilers:
+  - compiler:
+      spec: gcc@=8.5.0
+      paths:
+        cc: /usr/bin/gcc
+        cxx: /usr/bin/g++
+        f77: null
+        fc: null
+      flags: {}
+      operating_system: rhel8
+      target: aarch64
+      modules: []
+      environment: {}
+      extra_rpaths: []
