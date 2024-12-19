@@ -1,0 +1,71 @@
+spack:
+  view:
+    default:
+      root: view
+      link: run
+  specs:
+  - 'gmake@4.4:'
+  - awscli
+  - binutils +ld +gas
+  - clingo-bootstrap@spack +optimized
+  - curl
+  - file
+  - gcc@13 +profiled +binutils build_type=Release
+  - git
+  - gnupg
+  - gzip
+  - libtree
+  - lz4
+  - lzo
+  - patch
+  - patchelf
+  - py-boto3
+  - python@3.11 +optimizations
+  - tar
+  - unzip
+  - vim
+  - xz
+  - zstd
+  config:
+    install_tree:
+      root: $env/store
+  concretizer:
+    unify: true
+  mirrors:
+    spack:
+      url: oci://ghcr.io/spack/rhel-8-cache
+      signed: false
+      push:
+        access_pair:
+          id_variable: GITHUB_USER
+          secret_variable: GITHUB_TOKEN
+  packages:
+    all:
+      require: '%gcc@8.5.0 target=aarch64'
+  compilers:
+  - compiler:
+      spec: gcc@=8.5.0
+      paths:
+        cc: /usr/bin/gcc
+        cxx: /usr/bin/g++
+        f77: null
+        fc: null
+      flags: {}
+      operating_system: rhel8
+      target: aarch64
+      modules: []
+      environment: {}
+      extra_rpaths: []
+  - compiler:
+      spec: gcc@=13.3.0
+      paths:
+        cc: /spack/stage1/store/linux-rhel8-aarch64/gcc-8.5.0/gcc-13.3.0-upjqovge3xxrdg5ku34ejjh42w6oe6em/bin/gcc
+        cxx: /spack/stage1/store/linux-rhel8-aarch64/gcc-8.5.0/gcc-13.3.0-upjqovge3xxrdg5ku34ejjh42w6oe6em/bin/g++
+        f77: /spack/stage1/store/linux-rhel8-aarch64/gcc-8.5.0/gcc-13.3.0-upjqovge3xxrdg5ku34ejjh42w6oe6em/bin/gfortran
+        fc: /spack/stage1/store/linux-rhel8-aarch64/gcc-8.5.0/gcc-13.3.0-upjqovge3xxrdg5ku34ejjh42w6oe6em/bin/gfortran
+      flags: {}
+      operating_system: rhel8
+      target: aarch64
+      modules: []
+      environment: {}
+      extra_rpaths: []
