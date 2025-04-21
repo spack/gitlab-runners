@@ -1,5 +1,10 @@
 ---  # GCC setup for all ARM64 based targets
 packages:
   gcc:
-    compiler: [gcc]
-    require: "gcc@12 +strip +binutils ^binutils@2.37 target=aarch64"
+    require:
+    # binutils is required so that the linker is able to understand the proper
+    # cpu flags that newer gcc emits.
+    - any_of: ["+strip +binutils ^binutils@2.37 target=aarch64"]
+    # don't enforce our gcc requirements on the external os gcc.  Do this by
+    # requiring only newer gcc to match the spec we require.
+      when: "@12:"

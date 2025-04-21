@@ -111,28 +111,30 @@ RUN curl -sOL https://efa-installer.amazonaws.com/aws-efa-installer-${EFA_INSTAL
 # Bootstrap spack compiler installation into the eventual installation tree
 # Defined in spack/share/spack/gitlab/cloud_pipelines/configs/config.yaml
 ARG SPACK_ROOT="/bootstrap-compilers/spack"
-ARG SPACK_TAG="develop-2024-07-07"
+ARG SPACK_TAG="develop-2025-05-18"
 ARG TARGETARCH
 COPY Dockerfiles/pcluster-amazonlinux-2/${TARGETARCH}/packages.yaml /root/.spack/packages.yaml
 RUN mkdir -p $(dirname "${SPACK_ROOT}") \
-    && git clone -b ${SPACK_TAG} https://github.com/spack/spack "${SPACK_ROOT}" \
+    && git clone --depth=1 -b ${SPACK_TAG} https://github.com/spack/spack "${SPACK_ROOT}" \
     && cp "${SPACK_ROOT}/share/spack/gitlab/cloud_pipelines/configs/config.yaml" "${SPACK_ROOT}/etc/spack/config.yaml" \
     && cp "${SPACK_ROOT}/share/spack/gitlab/cloud_pipelines/configs/config.yaml" "/bootstrap/cloud_pipelines-config.yaml" \
     && . "${SPACK_ROOT}/share/spack/setup-env.sh" \
     && spack compiler add \
-    && spack install gcc \
-    && spack buildcache create -a -u /bootstrap-gcc-cache $(spack find --format '/{hash}') \
+    && spack install gcc@12 \
+    && spack buildcache create -u /bootstrap-gcc-cache $(spack find --format '/{hash}') \
     && rm -rf $(dirname "${SPACK_ROOT}") /root/.spack
 
 # Sign the buildcache
 RUN --mount=type=secret,id=bootstrap_gcc_key \
     mkdir -p $(dirname "${SPACK_ROOT}") \
-    && git clone -b ${SPACK_TAG} https://github.com/spack/spack "${SPACK_ROOT}" \
+    && git clone --depth=1 -b ${SPACK_TAG} https://github.com/spack/spack "${SPACK_ROOT}" \
     && . "${SPACK_ROOT}/share/spack/setup-env.sh" \
     && spack gpg trust /run/secrets/bootstrap_gcc_key \
     && secretkey_fingerprint=$(GNUPGHOME="${SPACK_ROOT}"/opt/spack/gpg gpg2 -K --with-fingerprint --with-colons | awk -F: '/fpr/{print $10}') \
-    && ls /bootstrap-gcc-cache/build_cache/*json | xargs -I {} spack gpg sign --output {}.sig --key ${secretkey_fingerprint} --clearsign {} \
+    && find /bootstrap-gcc-cache/v3/manifests/spec/ -name '*.spec.manifest.json' | xargs -I {} spack gpg sign --output {}.sig --key ${secretkey_fingerprint} --clearsign {} \
+    && find /bootstrap-gcc-cache/v3/manifests/spec/ -name '*.spec.manifest.json' | xargs -I {} mv {}.sig {} \
     && spack mirror add bootstrap-gcc-cache /bootstrap-gcc-cache \
+    && spack buildcache update-index bootstrap-gcc-cache \
     && spack gpg publish --rebuild-index -m bootstrap-gcc-cache ${secretkey_fingerprint} \
     && rm -rf $(dirname "${SPACK_ROOT}") /root/.spack
 
@@ -144,7 +146,7 @@ RUN if [[ "amd64" == "${TARGETARCH}" ]]; then mkdir -p $(dirname "${SPACK_ROOT}"
     && cp "${SPACK_ROOT}/share/spack/gitlab/cloud_pipelines/configs/config.yaml" "${SPACK_ROOT}/etc/spack/config.yaml" \
     && cp "${SPACK_ROOT}/share/spack/gitlab/cloud_pipelines/configs/config.yaml" "/bootstrap/cloud_pipelines-config.yaml" \
     && . "${SPACK_ROOT}/share/spack/setup-env.sh" \
-    && spack load gcc \
+    && spack load gcc@12 \
     && spack compiler add --scope site \
     && cd "${SPACK_ROOT}" \
     && spack install intel-oneapi-compilers@2024.1.0 \
