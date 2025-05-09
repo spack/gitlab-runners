@@ -120,8 +120,8 @@ RUN mkdir -p $(dirname "${SPACK_ROOT}") \
     && cp "${SPACK_ROOT}/share/spack/gitlab/cloud_pipelines/configs/config.yaml" "/bootstrap/cloud_pipelines-config.yaml" \
     && . "${SPACK_ROOT}/share/spack/setup-env.sh" \
     && spack compiler add \
-    && spack install gcc \
-    && spack buildcache create -a -u /bootstrap-gcc-cache $(spack find --format '/{hash}') \
+    && spack install gcc@12 \
+    && spack buildcache create -u /bootstrap-gcc-cache $(spack find --format '/{hash}') \
     && rm -rf $(dirname "${SPACK_ROOT}") /root/.spack
 
 # Sign the buildcache
