@@ -21,7 +21,7 @@ concurrency:
 
 jobs:
   deploy-images:
-    timeout-minutes: 600
+    timeout-minutes: 1200
     runs-on: self-hosted
     permissions:
       packages: write
