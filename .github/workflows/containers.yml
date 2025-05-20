@@ -114,7 +114,7 @@ jobs:
           docker rm -v $id
 
       - name: Upload public key to Github artifacts
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: ${{ env.KEY_FINGERPRINT }}.pub
           path: ${{ env.KEY_FINGERPRINT }}.pub
