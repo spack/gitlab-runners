@@ -9,10 +9,12 @@ RUN apt update -y \
   autoconf \
   automake \
   bzip2 \
+  clang \
   cpio \
   curl \
   file \
   findutils \
+  flang \
   g++ \
   gcc \
   gettext \
