@@ -21,7 +21,7 @@ concurrency:
 
 jobs:
   deploy-images:
-    timeout-minutes: 600
+    timeout-minutes: 1200
     runs-on: self-hosted
     permissions:
       packages: write
@@ -84,6 +84,8 @@ jobs:
           secrets: |
             "bootstrap_gcc_key=${{ secrets.BOOTSTRAP_GCC_KEY }}"
 
+# Note this artifact is useful only for manual verification of the manual upload
+# of the bootstrap cache.
   upload-gcc-buildcache:
     timeout-minutes: 60
     runs-on: self-hosted
@@ -106,11 +108,13 @@ jobs:
           CONTAINER_TAG: ${{ steps.meta.outputs.tags }}
         run: |
           id=$(docker create --platform linux/amd64 ${CONTAINER_TAG})
-          docker cp $id:/bootstrap-gcc-cache/build_cache/_pgp/${KEY_FINGERPRINT}.pub ${KEY_FINGERPRINT}.pub
+          docker cp $id:/bootstrap-gcc-cache/v3/manifests/key/${KEY_FINGERPRINT}.key.manifest.json ${KEY_FINGERPRINT}.key.manifest.json
+          blobpath=$(awk -F\" '/checksumAlgorithm/ {alg=$4} /checksum[^\w]/ { checksum=$4 } END {printf("%s/%s/%s\n",alg,substr(checksum,1,2),checksum) }' ${KEY_FINGERPRINT}.key.manifest.json)
+          docker cp $id:/bootstrap-gcc-cache/blobs/$blobpath ${KEY_FINGERPRINT}.pub
           docker rm -v $id
 
       - name: Upload public key to Github artifacts
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: ${{ env.KEY_FINGERPRINT }}.pub
           path: ${{ env.KEY_FINGERPRINT }}.pub
