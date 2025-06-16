@@ -1,0 +1,27 @@
+FROM public.ecr.aws/ubuntu/ubuntu:24.04
+
+SHELL ["/bin/bash", "-c"]
+
+RUN apt-get update && apt-get install -y git g++ make cmake unzip python3 python3-pip bash
+
+
+
+ARG SPACK_TAG=develop
+RUN git clone --depth=1 -b ${SPACK_TAG} https://github.com/spack/spack /spack
+
+ARG TEST_CACHE_TAR=cache.tar
+COPY ${TEST_CACHE_TAR} /cache.tar
+RUN mkdir /cache \
+ && tar -C /cache -xvf /cache.tar \
+ && rm /cache.tar
+
+RUN ls /spack/share/spack/setup-env.sh
+RUN . /spack/share/spack/setup-env.sh \
+ && spack mirror add --signed boot /cache \
+ && spack buildcache keys --install --trust --force
+
+RUN source /spack/share/spack/setup-env.sh \
+ && spack buildcache list -L \
+ && spack install --use-buildcache package:only gcc@12
+
+CMD ["/bin/bash"]
