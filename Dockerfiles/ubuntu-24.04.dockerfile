@@ -26,6 +26,7 @@ RUN apt update -y \
   libffi-dev \
   libssl-dev \
   libxml2-dev \
+  llvm-dev \
   locales \
   locate \
   m4 \
