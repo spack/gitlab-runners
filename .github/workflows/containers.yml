@@ -46,7 +46,7 @@ jobs:
     name: Build ${{ matrix.dockerfile[0] }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Set Container Tag
         id: meta
@@ -102,7 +102,7 @@ jobs:
         with:
           images: ${{ env.CONTAINER_NAME }}
       - name: Checkout Container
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
       - name: Copy from container to local disk
         env:
           CONTAINER_TAG: ${{ steps.meta.outputs.tags }}
