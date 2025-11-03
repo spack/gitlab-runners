@@ -72,7 +72,7 @@ jobs:
         with:
           file: Dockerfiles/${{ matrix.dockerfile[1] }}
           platforms: ${{ matrix.dockerfile[2] }}
-          push: true
+          push: ${{ github.ref == 'refs/heads/main' }}
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           cache-from: |
@@ -84,8 +84,8 @@ jobs:
           secrets: |
             "bootstrap_gcc_key=${{ secrets.BOOTSTRAP_GCC_KEY }}"
 
-# Note this artifact is useful only for manual verification of the manual upload
-# of the bootstrap cache.
+  # Note this artifact is useful only for manual verification of the manual upload
+  # of the bootstrap cache.
   upload-gcc-buildcache:
     timeout-minutes: 60
     runs-on: self-hosted
