@@ -26,7 +26,7 @@ RUN apt-get -yqq update && \
 
 RUN mkdir spack && \
     cd spack && \
-    curl -Lfs https://github.com/spack/spack/archive/refs/heads/develop.tar.gz | tar -xzf - --strip-components=1 -C . 
+    curl -Lfs https://github.com/spack/spack/archive/refs/heads/develop.tar.gz | tar -xzf - --strip-components=1 -C .
 
 COPY spack.yaml /root/
 COPY Dockerfiles/tutorial-ubuntu-22.04/compilers.yaml Dockerfiles/tutorial-ubuntu-22.04/packages.yaml /root/spack/etc/spack/
@@ -56,7 +56,6 @@ RUN apt-get -yqq update && \
     apt-get -yqq install --no-install-recommends \
         gcc gfortran g++ \
         gcc-10 gfortran-10 g++-10 \
-        gcc-12 gfortran-12 g++-12 \
         clang \
         libc-dev && \
     rm -rf /var/lib/apt/lists/*
