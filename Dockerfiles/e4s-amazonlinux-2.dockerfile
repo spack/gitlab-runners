@@ -46,18 +46,7 @@ RUN python3 -m pip install --upgrade pip setuptools wheel \
  && python3 -m pip install gnureadline 'boto3<=1.20.35' 'botocore<=1.23.46' pyyaml pytz minio requests clingo \
  && rm -rf ~/.cache
 
-COPY gpg.yaml /spack.yaml
-RUN git clone https://github.com/spack/spack /spack \
-  && export SPACK_ROOT=/spack \
- && . /spack/share/spack/setup-env.sh \
- && spack -e . concretize \
- && spack -e . install \
- && spack -e . gc -y \
- && spack clean -a \
- && rm -rf /spack /spack.yaml /spack.lock /.spack-env /root/.spack
-
-ENV PATH=/bootstrap/runner/view/bin:$PATH \
-    NVIDIA_VISIBLE_DEVICES=all \
+ENV NVIDIA_VISIBLE_DEVICES=all \
     NVIDIA_DRIVER_CAPABILITIES=compute,utility \
     LANGUAGE=en_US:en \
     LANG=en_US.UTF-8 \
