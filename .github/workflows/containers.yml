@@ -22,7 +22,7 @@ concurrency:
 jobs:
   deploy-images:
     timeout-minutes: 1200
-    runs-on: self-hosted
+    runs-on: ubuntu-latest
     permissions:
       packages: write
     strategy:
