@@ -48,6 +48,10 @@ RUN yum update -y \
     && yum clean all \
     && rm -rf /var/cache/yum/*
 
+# Need to hide the system gpg
+RUN mkdir -p /usr/bin/xgpg/ \
+    && mv /usr/bin/gpg* /usr/bin/xgpg/
+
 RUN python3 -m pip install --upgrade pip setuptools wheel \
  && python3 -m pip install gnureadline 'boto3<=1.20.35' 'botocore<=1.23.46' pyyaml pytz minio requests clingo \
  && rm -rf ~/.cache
