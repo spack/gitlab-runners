@@ -1,4 +1,4 @@
-FROM ubuntu:22.04 as build
+FROM ubuntu:26.04 as build
 
 WORKDIR /root
 
@@ -29,12 +29,11 @@ RUN mkdir spack && \
     curl -Lfs https://github.com/spack/spack/archive/refs/heads/develop.tar.gz | tar -xzf - --strip-components=1 -C .
 
 COPY spack.yaml /root/
-COPY Dockerfiles/tutorial-ubuntu-22.04/compilers.yaml Dockerfiles/tutorial-ubuntu-22.04/packages.yaml /root/spack/etc/spack/
+COPY Dockerfiles/tutorial-ubuntu-26.04/packages.yaml /root/spack/etc/spack/
 
 RUN --mount=type=cache,target=/root/.spack/cache \
     spack -e . concretize -f && \
-    spack -e . env depfile -o Makefile && \
-    make -j $(nproc) && \
+    spack -e . install && \
     spack -e . gc --yes-to-all
 
 # Remove Spack metadata, python cache and static libraries to save some bytes
@@ -42,7 +41,7 @@ RUN find -L /opt/spack -type d \( -name '__pycache__' -or -name '.spack' \) -exe
     find -L /opt/spack -type f -name '*.a' -exec rm -rf {} +
 
 # Stage 2, create a small(er) docker image
-FROM ubuntu:22.04
+FROM ubuntu:26.04
 
 ENV DEBIAN_FRONTEND=noninteractive \
     LANG=C.UTF-8 \
@@ -55,7 +54,7 @@ COPY --from=build /opt/spack /opt/spack
 RUN apt-get -yqq update && \
     apt-get -yqq install --no-install-recommends \
         gcc gfortran g++ \
-        gcc-10 gfortran-10 g++-10 \
+        gcc-14 gfortran-14 g++-14 \
         clang \
         libc-dev && \
     rm -rf /var/lib/apt/lists/*

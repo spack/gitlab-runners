@@ -38,7 +38,7 @@ jobs:
                      [ubuntu-22.04, ubuntu-22.04.dockerfile, 'linux/amd64,linux/arm64'],
                      [ubuntu-24.04, ubuntu-24.04.dockerfile, 'linux/amd64,linux/arm64'],
                      [linux-ubuntu22.04-x86_64_v2, linux-ubuntu22.04-x86_64_v2/Dockerfile, 'linux/amd64'],
-                     [tutorial-ubuntu-22.04, tutorial-ubuntu-22.04/Dockerfile, 'linux/amd64'],
+                     [tutorial-ubuntu-26.04, tutorial-ubuntu-26.04/Dockerfile, 'linux/amd64'],
                      [e4s-centos-7, e4s-centos-7.dockerfile, 'linux/amd64'],
                      [e4s-fedora-36, e4s-fedora-36.dockerfile, 'linux/amd64,linux/arm64'],
                      [pcluster-amazonlinux-2, pcluster-amazonlinux-2/Dockerfile, 'linux/amd64,linux/arm64']]
