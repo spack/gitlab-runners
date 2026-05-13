@@ -11,14 +11,13 @@ RUN apt-get -yqq update && \
     apt-get -yqq install \
         build-essential \
         ca-certificates \
-        clang \
+        gcc g++ gfortran \
         curl \
         file \
         git \
         gnupg2 \
         iproute2 \
         lld \
-        llvm \
         make \
         patch \
         python3 \
@@ -29,7 +28,6 @@ RUN mkdir spack && \
     curl -Lfs https://github.com/spack/spack/archive/refs/heads/develop.tar.gz | tar -xzf - --strip-components=1 -C .
 
 COPY spack.yaml /root/
-COPY Dockerfiles/tutorial-ubuntu-26.04/packages.yaml /root/spack/etc/spack/
 
 RUN --mount=type=cache,target=/root/.spack/cache \
     spack -e . concretize -f && \

@@ -17,7 +17,7 @@ spack:
   - 'patch'
   - 'patchelf'
   - 'py-boto3'
-  - 'python@3.11 +optimizations %clang'
+  - 'python@3.11 +optimizations'
   - 'tar'
   - 'unzip'
   - 'vim'
@@ -26,5 +26,19 @@ spack:
   config:
     install_tree:
       root: /opt/spack/store
+  packages:
+    all:
+      require: 
+      - target=x86_64_v2
+      variants: ~nls
+    gcc:
+      externals:
+      - spec: gcc@15.2.0 languages:='c,c++,fortran'
+        prefix: /usr
+        extra_attributes:
+          compilers:
+            c: /usr/bin/gcc
+            cxx: /usr/bin/g++
+            fortran: /usr/bin/gfortran
   concretizer:
     unify: true
