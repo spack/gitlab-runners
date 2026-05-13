@@ -31,7 +31,7 @@ COPY spack.yaml /root/
 
 RUN --mount=type=cache,target=/root/.spack/cache \
     spack -e . concretize -f && \
-    spack -e . install && \
+    spack -e . install --fail-fast&& \
     spack -e . gc --yes-to-all
 
 # Remove Spack metadata, python cache and static libraries to save some bytes
