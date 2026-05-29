@@ -41,3 +41,7 @@ spack:
             fortran: /usr/bin/gfortran
   concretizer:
     unify: true
+  repos:
+    builtin:
+      git: https://github.com/spack/spack-packages.git
+      commit: 83fce39a7c0144f53566a2490fc2c4252e9e159e
