@@ -4,7 +4,6 @@ spack:
       root: /opt/spack/view
       link: run
   specs:
-  - 'awscli'
   - 'clingo-bootstrap@spack +optimized'
   - 'curl'
   - 'file'
@@ -17,7 +16,7 @@ spack:
   - 'patch'
   - 'patchelf'
   - 'py-boto3'
-  - 'python@3.11 +optimizations %clang'
+  - 'python +optimizations'
   - 'tar'
   - 'unzip'
   - 'vim'
@@ -26,5 +25,23 @@ spack:
   config:
     install_tree:
       root: /opt/spack/store
+  packages:
+    all:
+      require: 
+      - target=x86_64_v2
+      variants: ~nls
+    gcc:
+      externals:
+      - spec: gcc@15.2.0 languages:='c,c++,fortran'
+        prefix: /usr
+        extra_attributes:
+          compilers:
+            c: /usr/bin/gcc
+            cxx: /usr/bin/g++
+            fortran: /usr/bin/gfortran
   concretizer:
     unify: true
+  repos:
+    builtin:
+      git: https://github.com/spack/spack-packages.git
+      commit: 83fce39a7c0144f53566a2490fc2c4252e9e159e
