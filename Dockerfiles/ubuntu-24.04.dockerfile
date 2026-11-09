@@ -56,6 +56,28 @@ RUN python3 -m pip install --upgrade pip setuptools wheel \
  && python3 -m pip install gnureadline boto3 pyyaml pytz minio requests clingo \
  && rm -rf ~/.cache
 
+# Install AWS CLI v2 (used improve performance of `spack buildcache update-index`).
+
+# AWS CLI Team public key, used to verify the installer signature.
+# Source: https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html
+# Fingerprint: FB5D B77F D5C1 18B8 0511  ADA8 A631 0ACC 4672 475C (expires 2027-07-01)
+COPY keys/aws-cli.asc /usr/share/keyrings/aws-cli.asc
+
+# The signature must be valid AND made by the expected key: gpg's status output
+# is checked for a VALIDSIG line whose primary-key fingerprint matches.
+RUN AWSCLI_ZIP="awscli-exe-linux-$(uname -m).zip" \
+  && AWSCLI_KEY_FPR=FB5DB77FD5C118B80511ADA8A6310ACC4672475C \
+  && curl -sSfL --retry 5 --retry-connrefused "https://awscli.amazonaws.com/${AWSCLI_ZIP}" -o /tmp/awscliv2.zip \
+  && curl -sSfL --retry 5 --retry-connrefused "https://awscli.amazonaws.com/${AWSCLI_ZIP}.sig" -o /tmp/awscliv2.zip.sig \
+  && export GNUPGHOME="$(mktemp -d)" \
+  && gpg --batch --quiet --import /usr/share/keyrings/aws-cli.asc \
+  && gpg --batch --status-fd 3 --verify /tmp/awscliv2.zip.sig /tmp/awscliv2.zip 3>"$GNUPGHOME/status" \
+  && grep -Eq "^\[GNUPG:\] VALIDSIG .* ${AWSCLI_KEY_FPR}\$" "$GNUPGHOME/status" \
+  && unzip -q /tmp/awscliv2.zip -d /tmp \
+  && /tmp/aws/install \
+  && rm -rf /tmp/awscliv2.zip /tmp/awscliv2.zip.sig /tmp/aws "$GNUPGHOME" \
+  && aws --version
+
 CMD ["/bin/bash"]
 
 ENV NVIDIA_VISIBLE_DEVICES=all \
