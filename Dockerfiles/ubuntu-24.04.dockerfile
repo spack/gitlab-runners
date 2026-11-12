@@ -56,27 +56,6 @@ RUN python3 -m pip install --upgrade pip setuptools wheel \
  && python3 -m pip install gnureadline boto3 pyyaml pytz minio requests \
  && rm -rf ~/.cache
 
-# Install Spack's optimized clingo (faster than the PyPI wheel) with a
-# throwaway copy of Spack, and make it importable from the venv so CI's
-# Spack uses it instead of bootstrapping its own.
-# SPACK_COMMIT (Spack v1.2.2) only picks which clingo build is installed.
-ARG SPACK_COMMIT=3e19345b6e12f5ff1b874f4059622fc6a1fd804a
-RUN git init -q /tmp/spack \
- && git -C /tmp/spack fetch -q --depth 1 https://github.com/spack/spack.git "${SPACK_COMMIT}" \
- && git -C /tmp/spack checkout -q FETCH_HEAD \
- && export SPACK_USER_CONFIG_PATH=/tmp/spack/.user SPACK_USER_CACHE_PATH=/tmp/spack/.user \
- && /tmp/spack/bin/spack bootstrap root --scope site /opt/spack-bootstrap \
- && /tmp/spack/bin/spack bootstrap disable --scope site spack-install \
- && /tmp/spack/bin/spack bootstrap now \
- && PY_TAG=$(python3 -c 'import sys; print("cpython-%d%d" % sys.version_info[:2])') \
- && CLINGO_SO=$(find /opt/spack-bootstrap/store -name "clingo.${PY_TAG}-*.so") \
- && echo "clingo builds matching ${PY_TAG}: ${CLINGO_SO:-none}" \
- && test "$(echo "$CLINGO_SO" | grep -c .)" -eq 1 \
- && dirname "$CLINGO_SO" > "$(python3 -c 'import sysconfig; print(sysconfig.get_paths()["purelib"])')/spack-clingo.pth" \
- && rm -rf /tmp/spack \
- && python3 -c 'import clingo; print("clingo", clingo.__version__, "from", clingo.__file__)' \
- && python3 -c 'import clingo, sys; sys.exit(0 if clingo.__file__.startswith("/opt/spack-bootstrap/") else 1)'
-
 # Install AWS CLI v2 (used improve performance of `spack buildcache update-index`).
 
 # AWS CLI Team public key, used to verify the installer signature.
@@ -98,6 +77,11 @@ RUN AWSCLI_ZIP="awscli-exe-linux-$(uname -m).zip" \
   && /tmp/aws/install \
   && rm -rf /tmp/awscliv2.zip /tmp/awscliv2.zip.sig /tmp/aws "$GNUPGHOME" \
   && aws --version
+
+# Spack's optimized clingo (faster than the PyPI wheel); SPACK_COMMIT is v1.2.2.
+ARG SPACK_COMMIT=3e19345b6e12f5ff1b874f4059622fc6a1fd804a
+COPY scripts/bootstrap-clingo.sh /tmp/bootstrap-clingo.sh
+RUN /tmp/bootstrap-clingo.sh "${SPACK_COMMIT}" && rm /tmp/bootstrap-clingo.sh
 
 CMD ["/bin/bash"]
 
