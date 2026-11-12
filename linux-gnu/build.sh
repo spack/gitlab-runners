@@ -18,6 +18,10 @@ spack -e /env mirror add --unsigned --autopush \
   --oci-username-variable GITHUB_ACTOR --oci-password-variable GITHUB_TOKEN \
   cache "$cache"
 
+# Packages are autopushed as they are built; keep the index current even if
+# the build fails, so the cache can be browsed (installs do not need it).
+trap 'spack -e /env buildcache update-index cache || true' EXIT
+
 spack -e /env concretize --fresh 2>&1 | tee /out/concretize.txt
 spack -e /env find -c --show-full-compiler -L > /out/specs.txt || true
 
