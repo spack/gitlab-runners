@@ -1,0 +1,33 @@
+#!/bin/bash
+# Runs inside builder.dockerfile; see .github/workflows/linux-gnu.yml.
+#
+# Inputs (environment): REGISTRY, TAG, ARCH, BASE, GITHUB_ACTOR, GITHUB_TOKEN.
+# Mounts: /spack, /spack-packages, /env (spack.yaml, writable), /out.
+set -euo pipefail
+
+export PATH=/spack/bin:$PATH
+export SPACK_DISABLE_LOCAL_CONFIG=1
+export SPACK_USER_CACHE_PATH=/tmp/spack-cache
+
+cache="oci://$REGISTRY/linux-gnu-cache"
+
+# Use the pinned spack-packages checkout instead of cloning builtin.
+spack -e /env config add "repos:builtin:/spack-packages/repos/spack_repo/builtin"
+spack -e /env repo list
+spack -e /env mirror add --unsigned --autopush \
+  --oci-username-variable GITHUB_ACTOR --oci-password-variable GITHUB_TOKEN \
+  cache "$cache"
+
+spack -e /env concretize --fresh 2>&1 | tee /out/concretize.txt
+spack -e /env find -c --show-full-compiler -L > /out/specs.txt || true
+
+# Installs pull what is already in the cache and push what they build.
+spack -e /env install --fail-fast -j "$(nproc)"
+
+# Tag one image with every root and its runtime closure, on top of the base.
+spack -e /env buildcache push --unsigned --update-index --base-image "$BASE-$ARCH" \
+  --tag "$TAG-$ARCH" cache
+
+# Smoke test of the environment the image gets (PATH etc. of the roots).
+spack -e /env load --sh --only package \
+  gcc binutils python git curl gnupg awscli-v2 clingo-bootstrap > /out/load.sh

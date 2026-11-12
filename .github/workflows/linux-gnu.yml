@@ -1,0 +1,161 @@
+name: linux-gnu image
+
+# Builds linux-gnu/spack.yaml natively on x86_64 and aarch64 runners inside an
+# AlmaLinux 8 builder container. Every installed package is pushed to an OCI
+# build cache as soon as it is built (autopush), so a re-run of a timed-out or
+# failed job resumes where it left off. The image itself is assembled by
+# `spack buildcache push --base-image ... --tag ...`: the runtime base plus one
+# layer per Spack package, with PATH etc. set for the root specs.
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+    - linux-gnu/**
+    - .github/workflows/linux-gnu.yml
+  pull_request:
+    paths:
+    - linux-gnu/**
+    - .github/workflows/linux-gnu.yml
+
+concurrency:
+  group: linux-gnu-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  # Pinned Spack and package repository. Point these at forks to build with
+  # unmerged fixes.
+  SPACK_REPOSITORY: spack/spack
+  SPACK_COMMIT: e9a7922af3e28d24308f47ed7ce1ecd5eb9db817
+  PACKAGES_REPOSITORY: spack/spack-packages
+  PACKAGES_COMMIT: 8933fbb6925be105d493d2eff0c0b375a2ac1cc8
+  REGISTRY: ghcr.io/${{ github.repository_owner }}
+
+jobs:
+  base:
+    runs-on: ${{ matrix.runner }}
+    strategy:
+      matrix:
+        include:
+        - {runner: ubuntu-24.04, arch: amd64}
+        - {runner: ubuntu-24.04-arm, arch: arm64}
+    permissions:
+      contents: read
+      packages: write
+    outputs:
+      tag: ${{ steps.tag.outputs.tag }}
+    steps:
+    - uses: actions/checkout@v7
+    - name: Tag
+      id: tag
+      # Same tag for both arches: the base inputs, not the build date.
+      run: echo "tag=$(cat linux-gnu/base.dockerfile | sha256sum | cut -c1-12)" >> "$GITHUB_OUTPUT"
+    - uses: docker/login-action@v4
+      with:
+        registry: ghcr.io
+        username: ${{ github.actor }}
+        password: ${{ secrets.GITHUB_TOKEN }}
+    - name: Build and push runtime base and builder
+      run: |
+        base=$REGISTRY/linux-gnu-base:${{ steps.tag.outputs.tag }}-${{ matrix.arch }}
+        docker build -t $base -f linux-gnu/base.dockerfile linux-gnu
+        docker build -t linux-gnu-builder --build-arg BASE=$base -f linux-gnu/builder.dockerfile linux-gnu
+        docker push $base
+
+  base-manifest:
+    needs: base
+    runs-on: ubuntu-24.04
+    permissions:
+      packages: write
+    steps:
+    - uses: docker/login-action@v4
+      with:
+        registry: ghcr.io
+        username: ${{ github.actor }}
+        password: ${{ secrets.GITHUB_TOKEN }}
+    - run: |
+        b=$REGISTRY/linux-gnu-base:${{ needs.base.outputs.tag }}
+        docker buildx imagetools create -t $b $b-amd64 $b-arm64
+
+  build:
+    needs: [base, base-manifest]
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 355
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+        - {runner: ubuntu-24.04, arch: amd64}
+        - {runner: ubuntu-24.04-arm, arch: arm64}
+    permissions:
+      contents: read
+      packages: write
+    env:
+      BASE: ghcr.io/${{ github.repository_owner }}/linux-gnu-base:${{ needs.base.outputs.tag }}
+    steps:
+    - uses: actions/checkout@v7
+
+    - name: Check out Spack and spack-packages
+      run: |
+        for r in "spack $SPACK_REPOSITORY $SPACK_COMMIT" "spack-packages $PACKAGES_REPOSITORY $PACKAGES_COMMIT"; do
+          set -- $r
+          git init -q $1
+          git -C $1 fetch -q --depth 1 https://github.com/$2.git $3
+          git -C $1 checkout -q FETCH_HEAD
+        done
+
+    - uses: docker/login-action@v4
+      with:
+        registry: ghcr.io
+        username: ${{ github.actor }}
+        password: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Builder image
+      run: |
+        docker pull $BASE-${{ matrix.arch }}
+        docker build -t linux-gnu-builder --build-arg BASE=$BASE-${{ matrix.arch }} \
+          -f linux-gnu/builder.dockerfile linux-gnu
+
+    - name: Concretize, install and push
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        TAG: ${{ github.event_name == 'pull_request' && format('pr{0}', github.event.number) || github.ref_name }}
+      run: |
+        mkdir -p env out
+        cp linux-gnu/spack.yaml env/
+        docker run --rm -e GITHUB_ACTOR -e GITHUB_TOKEN -e REGISTRY -e TAG \
+          -e ARCH=${{ matrix.arch }} -e BASE \
+          -e SPACK_COLOR=always -e PYTHONUNBUFFERED=1 \
+          -v $PWD/spack:/spack -v $PWD/spack-packages:/spack-packages \
+          -v $PWD/env:/env -v $PWD/out:/out -v $PWD/linux-gnu:/linux-gnu:ro \
+          linux-gnu-builder /linux-gnu/build.sh
+
+    - uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: linux-gnu-${{ matrix.arch }}
+        path: |
+          env/spack.yaml
+          env/spack.lock
+          out/
+
+  image:
+    needs: [base, build]
+    runs-on: ubuntu-24.04
+    permissions:
+      packages: write
+    steps:
+    - uses: docker/login-action@v4
+      with:
+        registry: ghcr.io
+        username: ${{ github.actor }}
+        password: ${{ secrets.GITHUB_TOKEN }}
+    - name: Multi-arch image
+      env:
+        TAG: ${{ github.event_name == 'pull_request' && format('pr{0}', github.event.number) || github.ref_name }}
+      run: |
+        i=$REGISTRY/linux-gnu
+        day=$(date -u +%Y-%m-%d)
+        docker buildx imagetools create -t $i:$TAG -t $i:$day-${{ github.run_id }} $i:$TAG-amd64 $i:$TAG-arm64
+        docker buildx imagetools inspect $i:$TAG
