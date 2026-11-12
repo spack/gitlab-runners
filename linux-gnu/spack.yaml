@@ -1,0 +1,74 @@
+# Tools for Spack's GitLab CI on linux, built inside builder.dockerfile and
+# pushed as an image on top of base.dockerfile (see README.md).
+spack:
+  view: false
+
+  specs:
+  # Built with the system gcc 8.5 of AlmaLinux 8.
+  - group: compiler
+    specs:
+    - gcc@14 +binutils +profiled build_type=Release languages=c,c++,fortran
+    - binutils +ld +gas +plugins ~libiberty
+    override:
+      packages:
+        c:
+          require: [gcc@8.5.0]
+        cxx:
+          require: [gcc@8.5.0]
+
+  # Everything else is built with the gcc from the compiler group.
+  - group: tools
+    needs: [compiler]
+    specs:
+    - awscli-v2
+    - bzip2
+    - clingo-bootstrap@spack +optimized
+    - curl
+    - file
+    - git
+    - gmake
+    - gnupg
+    - gzip
+    - libtree
+    - lz4
+    - patch
+    - patchelf
+    - py-boto3
+    - python +optimizations
+    - tar
+    - unzip
+    - vim
+    - xz
+    - zstd
+    override:
+      packages:
+        c:
+          require: [gcc@14]
+        cxx:
+          require: [gcc@14]
+        fortran:
+          require: [gcc@14]
+
+  concretizer:
+    unify: true
+    reuse: false
+
+  config:
+    install_tree:
+      root: /opt/spack
+
+  packages:
+    all:
+      require:
+      - spec: target=x86_64_v3
+        when: target=x86_64:
+      - spec: target=aarch64
+        when: target=aarch64:
+    gcc:
+      externals:
+      - spec: gcc@8.5.0 languages:='c,c++'
+        prefix: /usr
+        extra_attributes:
+          compilers:
+            c: /usr/bin/gcc
+            cxx: /usr/bin/g++
