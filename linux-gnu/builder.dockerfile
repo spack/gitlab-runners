@@ -3,7 +3,8 @@
 ARG BASE
 FROM ${BASE}
 
-RUN dnf install -y --setopt=install_weak_deps=False \
+# libstdc++-static (for gcc's bootstrap) is in powertools.
+RUN dnf install -y --setopt=install_weak_deps=False --enablerepo=powertools \
       binutils \
       bzip2 \
       diffutils \
