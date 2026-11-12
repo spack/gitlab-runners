@@ -25,9 +25,9 @@ spack -e /env mirror add --unsigned --autopush \
 trap 'spack -e /env buildcache update-index cache || true' EXIT
 
 spack -e /env concretize --fresh 2>&1 | tee /out/concretize.txt
-targets=$(grep -oE 'target=[a-z0-9_]+' /out/concretize.txt | sort -u | tr '\n' ' ')
+targets=$(spack --color=never -e /env find -c --format '{target}' | grep -v '^==>' | sort -u | xargs)
 echo "targets: $targets"
-test "$targets" = "target=$TARGET "
+test "$targets" = "$TARGET"
 spack -e /env find -c --show-full-compiler -L > /out/specs.txt || true
 
 # Installs pull what is already in the cache and push what they build.
