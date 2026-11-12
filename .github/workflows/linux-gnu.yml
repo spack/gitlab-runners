@@ -27,8 +27,9 @@ env:
   # unmerged fixes.
   SPACK_REPOSITORY: spack/spack
   SPACK_COMMIT: e9a7922af3e28d24308f47ed7ce1ecd5eb9db817
-  PACKAGES_REPOSITORY: spack/spack-packages
-  PACKAGES_COMMIT: 8933fbb6925be105d493d2eff0c0b375a2ac1cc8
+  # haampie-llms/spack-packages linux-gnu-ci-image: develop 8933fbb + version bumps
+  PACKAGES_REPOSITORY: haampie-llms/spack-packages
+  PACKAGES_COMMIT: e0051ddce1d5ba25c74844143f20d63656c08158
   REGISTRY: ghcr.io/${{ github.repository_owner }}
 
 jobs:
