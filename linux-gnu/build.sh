@@ -1,7 +1,7 @@
 #!/bin/bash
 # Runs inside builder.dockerfile; see .github/workflows/linux-gnu.yml.
 #
-# Inputs (environment): REGISTRY, TAG, ARCH, BASE, GITHUB_ACTOR, GITHUB_TOKEN.
+# Inputs (environment): REGISTRY, TAG, ARCH, TARGET, BASE, GITHUB_ACTOR, GITHUB_TOKEN.
 # Mounts: /spack, /spack-packages, /env (spack.yaml, writable), /out.
 set -euo pipefail
 
@@ -14,6 +14,8 @@ cache="oci://$REGISTRY/linux-gnu-cache"
 # Use the pinned spack-packages checkout instead of cloning builtin.
 spack -e /env config add "repos:builtin:/spack-packages/repos/spack_repo/builtin"
 spack -e /env repo list
+# Generic microarchitecture, not the runner's (e.g. neoverse_n2 / zen4).
+spack -e /env config add "packages:all:require:[target=$TARGET]"
 spack -e /env mirror add --unsigned --autopush \
   --oci-username-variable GITHUB_ACTOR --oci-password-variable GITHUB_TOKEN \
   cache "$cache"
@@ -23,6 +25,9 @@ spack -e /env mirror add --unsigned --autopush \
 trap 'spack -e /env buildcache update-index cache || true' EXIT
 
 spack -e /env concretize --fresh 2>&1 | tee /out/concretize.txt
+targets=$(grep -oE 'target=[a-z0-9_]+' /out/concretize.txt | sort -u | tr '\n' ' ')
+echo "targets: $targets"
+test "$targets" = "target=$TARGET "
 spack -e /env find -c --show-full-compiler -L > /out/specs.txt || true
 
 # Installs pull what is already in the cache and push what they build.

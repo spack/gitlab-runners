@@ -86,8 +86,8 @@ jobs:
       fail-fast: false
       matrix:
         include:
-        - {runner: ubuntu-24.04, arch: amd64}
-        - {runner: ubuntu-24.04-arm, arch: arm64}
+        - {runner: ubuntu-24.04, arch: amd64, target: x86_64_v3}
+        - {runner: ubuntu-24.04-arm, arch: arm64, target: aarch64}
     permissions:
       contents: read
       packages: write
@@ -125,7 +125,7 @@ jobs:
         mkdir -p env out
         cp linux-gnu/spack.yaml env/
         docker run --rm -e GITHUB_ACTOR -e GITHUB_TOKEN -e REGISTRY -e TAG \
-          -e ARCH=${{ matrix.arch }} -e BASE \
+          -e ARCH=${{ matrix.arch }} -e TARGET=${{ matrix.target }} -e BASE \
           -e SPACK_COLOR=always -e PYTHONUNBUFFERED=1 \
           -v $PWD/spack:/spack -v $PWD/spack-packages:/spack-packages \
           -v $PWD/env:/env -v $PWD/out:/out -v $PWD/linux-gnu:/linux-gnu:ro \
