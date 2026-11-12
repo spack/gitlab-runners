@@ -25,7 +25,7 @@ spack -e /env mirror add --unsigned --autopush \
 trap 'spack -e /env buildcache update-index cache || true' EXIT
 
 spack -e /env concretize --fresh 2>&1 | tee /out/concretize.txt
-targets=$(spack --color=never -e /env find -c --format '{target}' | grep -v '^==>' | sort -u | xargs)
+targets=$(spack --color=never -e /env find -c --format '{target}' | grep -v '^==>' | awk '{print $NF}' | sort -u | xargs)
 echo "targets: $targets"
 test "$targets" = "$TARGET"
 spack -e /env find -c --show-full-compiler -L > /out/specs.txt || true
