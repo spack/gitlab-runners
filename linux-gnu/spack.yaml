@@ -42,13 +42,8 @@ spack:
     install_tree:
       root: /opt/spack
 
+  # build.sh adds `packages:all:require:[target=...]` (x86_64_v3 or aarch64).
   packages:
-    all:
-      require:
-      - spec: target=x86_64_v3
-        when: "target=x86_64:"
-      - spec: target=aarch64
-        when: "target=aarch64:"
     c:
       require: [gcc@8.5.0]
     cxx:
