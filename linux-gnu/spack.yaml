@@ -4,7 +4,15 @@
 # built llvm, and the image has no system gcc.
 spack:
   # Last layer of the image; PATH etc. refer to it (buildcache push --env-view).
-  view: /opt/view
+  # The compilers get their own prefix: `spack compiler find` would otherwise
+  # register them with the whole view as prefix, and builds would find the
+  # image's tools as dependencies.
+  view:
+    default:
+      root: /opt/view
+      projections:
+        gcc: gcc
+        llvm: llvm
 
   specs:
   - group: tools
