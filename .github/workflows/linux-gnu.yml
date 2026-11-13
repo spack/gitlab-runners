@@ -155,9 +155,11 @@ jobs:
       env:
         TAG: ${{ github.event_name == 'pull_request' && format('pr{0}', github.event.number) || github.ref_name }}
       run: |
+        # `spack buildcache push --tag` tags per-arch images in the cache repository
+        c=$REGISTRY/linux-gnu-cache
         i=$REGISTRY/linux-gnu
         day=$(date -u +%Y-%m-%d)
-        docker buildx imagetools create -t $i:$TAG -t $i:$day-${{ github.run_id }} $i:$TAG-amd64 $i:$TAG-arm64
+        docker buildx imagetools create -t $i:$TAG -t $i:$day-${{ github.run_id }} $c:$TAG-amd64 $c:$TAG-arm64
         docker buildx imagetools inspect $i:$TAG
 
   # Is the image usable for spack-packages CI? Concretize a developer-tools
@@ -190,4 +192,4 @@ jobs:
           -e BUILD_SPECS="libtree tree jq ncdu tmux patchelf py-isort gmake" \
           -e SPACK_COLOR=always -e PYTHONUNBUFFERED=1 \
           -v $PWD/linux-gnu:/linux-gnu:ro \
-          $REGISTRY/linux-gnu:$TAG-${{ matrix.arch }} /linux-gnu/test-ci.sh
+          $REGISTRY/linux-gnu-cache:$TAG-${{ matrix.arch }} /linux-gnu/test-ci.sh

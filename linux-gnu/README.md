@@ -24,7 +24,7 @@ of this natively on x86_64 and aarch64 GitHub runners and publishes:
 - `ghcr.io/<owner>/linux-gnu-base:<hash>`: the runtime base
 - `ghcr.io/<owner>/linux-gnu-cache`: the OCI build cache. Packages are pushed as
   soon as they are built (`autopush`), so a re-run after a timeout resumes.
-- `ghcr.io/<owner>/linux-gnu:<branch>-{amd64,arm64}`, and multi-arch
+- `ghcr.io/<owner>/linux-gnu-cache:<branch>-{amd64,arm64}` (`--tag` tags in the cache repository), and multi-arch
   `ghcr.io/<owner>/linux-gnu:<branch>` plus `:<date>-<run id>`.
 
 Spack and spack-packages are pinned by commit in the workflow. Point them at

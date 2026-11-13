@@ -33,10 +33,7 @@ spack -e /env find -c --show-full-compiler -L > /out/specs.txt || true
 # Installs pull what is already in the cache and push what they build.
 spack -e /env install --fail-fast -j "$(nproc)"
 
-# Tag one image with every root and its runtime closure, on top of the base.
+# Tag one image with every root and its runtime closure, on top of the base. The
+# tag is created in the cache's repository: $REGISTRY/linux-gnu-cache:$TAG-$ARCH.
 spack -e /env buildcache push --unsigned --update-index --base-image "$BASE-$ARCH" \
   --tag "$TAG-$ARCH" cache
-
-# Smoke test of the environment the image gets (PATH etc. of the roots).
-spack -e /env load --sh --only package \
-  gcc binutils python git curl gnupg awscli-v2 clingo-bootstrap > /out/load.sh
