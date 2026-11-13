@@ -1,7 +1,7 @@
-#!/bin/bash
+#!/bin/sh
 # Runs in the base image, see .github/workflows/linux-gnu.yml. Inputs: REGISTRY,
 # TAG, TARGET, BASE, GITHUB_ACTOR, GITHUB_TOKEN; mounts: /spack, /spack-packages.
-set -euo pipefail
+set -eu
 
 # AlmaLinux's gcc 8.5 and what Spack needs to run. libstdc++-static (for gcc's
 # bootstrap) is in powertools.
@@ -11,7 +11,7 @@ dnf install -y --setopt=install_weak_deps=False --enablerepo=powertools \
 
 mkdir /env
 cp "$(dirname "$0")/spack.yaml" /env
-export PATH=/spack/bin:$PATH SPACK_ENV=/env
+export PATH="/spack/bin:$PATH" SPACK_ENV=/env
 
 # Generic microarchitecture, not the runner's (e.g. neoverse_n2 / zen4).
 spack config add "packages:all:require:[target=$TARGET]"
