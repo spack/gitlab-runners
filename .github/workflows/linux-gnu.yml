@@ -172,8 +172,8 @@ jobs:
       fail-fast: false
       matrix:
         include:
-        - {runner: ubuntu-24.04, arch: amd64, target: x86_64_v3, stack: developer-tools-x86_64_v3-linux-gnu}
-        - {runner: ubuntu-24.04-arm, arch: arm64, target: aarch64, stack: developer-tools-aarch64-linux-gnu}
+        - {runner: ubuntu-24.04, arch: amd64, target: x86_64_v3, stack: developer-tools-x86_64_v3-linux-gnu, ml_stack: ml-linux-x86_64}
+        - {runner: ubuntu-24.04-arm, arch: arm64, target: aarch64, stack: developer-tools-aarch64-linux-gnu, ml_stack: ml-linux-aarch64}
     permissions:
       contents: read
       packages: read
@@ -189,7 +189,7 @@ jobs:
         TAG: ${{ github.event_name == 'pull_request' && format('pr{0}', github.event.number) || github.ref_name }}
       run: |
         docker run --rm -e PACKAGES_REPOSITORY -e PACKAGES_COMMIT \
-          -e SPACK_CI_TARGET=${{ matrix.target }} -e STACK=${{ matrix.stack }} \
+          -e SPACK_CI_TARGET=${{ matrix.target }} -e STACK=${{ matrix.stack }} -e ML_STACK=${{ matrix.ml_stack }} \
           -e BUILD_SPECS="libtree tree jq ncdu tmux patchelf py-isort gmake" \
           -e SPACK_COLOR=always -e PYTHONUNBUFFERED=1 \
           -v $PWD/linux-gnu:/linux-gnu:ro \

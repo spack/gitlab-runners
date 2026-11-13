@@ -9,12 +9,14 @@ from a Spack environment on top of a minimal AlmaLinux 8 base.
   and the bare minimum to run Spack.
 - [`spack.yaml`](spack.yaml): gcc@14 (the compiler CI builds with) and the tools
   CI needs: Python with Spack's optimized clingo, boto3, AWS CLI v2, git, curl,
-  gnupg, compression tools, ...
+  gnupg, compression tools, ... All built with AlmaLinux's gcc 8.5, except
+  llvm@23 (clang, for stacks that require `%c,cxx=llvm`), which a second spec
+  group builds with the Spack-built gcc@14 so that clang uses its libstdc++.
 - [`build.sh`](build.sh): concretizes and installs the environment in the
   builder, then runs `spack buildcache push --base-image <base> --tag <tag>`,
   which produces the image: the base plus one layer per package, with `PATH` and
   friends set for the root specs.
-- [`test-ci.sh`](test-ci.sh): runs in the image like spack-packages CI does:
+- [`test-ci.sh`](test-ci.sh): checks clang, then runs in the image like spack-packages CI does:
   concretizes a developer-tools stack (generate job) and builds part of it under
   CI's padded install tree (build jobs).
 
