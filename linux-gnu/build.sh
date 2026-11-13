@@ -33,8 +33,9 @@ spack -e /env find -c --show-full-compiler -L > /out/specs.txt || true
 # Installs pull what is already in the cache and push what they build.
 spack -e /env install --fail-fast -j "$(nproc)"
 
-# Tag one image with every root and its runtime closure, on top of the base. The
-# tag is created in the cache's repository: $REGISTRY/linux-gnu-cache:$TAG-$ARCH.
+# Tag one image with every root and its runtime closure, on top of the base, and
+# the environment view as the last layer. The tag is created in the cache's
+# repository: $REGISTRY/linux-gnu-cache:$TAG-$ARCH.
 spack -e /env buildcache push --unsigned --update-index --without-build-dependencies \
   --base-image "$BASE-$ARCH" \
-  --tag "$TAG-$ARCH" cache
+  --tag "$TAG-$ARCH" --env-view cache

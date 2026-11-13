@@ -12,7 +12,9 @@
 # only Spack's gcc@14. Spack only builds with external or concrete compilers,
 # hence the group that `needs` the first one.
 spack:
-  view: false
+  # Added to the image as its last layer by `spack buildcache push --env-view`:
+  # PATH etc. in the image refer to the view instead of to every package.
+  view: /opt/view
 
   specs:
   - group: tools
