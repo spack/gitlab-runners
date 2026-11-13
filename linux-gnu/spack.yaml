@@ -52,7 +52,9 @@ spack:
   - group: llvm
     needs: [tools]
     specs:
-    - llvm@23 +clang +lld ~lldb ~libomptarget ~offload ~python
+    # +link_llvm_dylib: tools link libLLVM.so/libclang-cpp.so instead of each
+    # statically linking LLVM (3.4 GB compressed layer otherwise).
+    - llvm@23 +clang +lld +link_llvm_dylib ~lldb ~libomptarget ~offload ~python
     override:
       packages:
         llvm:
