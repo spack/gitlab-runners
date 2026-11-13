@@ -4,13 +4,14 @@
 # stacks (.ci/gitlab/.gitlab-ci.yml, .ci/gitlab/configs/ci.yaml).
 #
 # Inputs (environment): PACKAGES_REPOSITORY, PACKAGES_COMMIT, SPACK_CI_TARGET,
-# STACK, BUILD_SPECS (space separated roots of the stack to build).
+# STACK, BUILD_SPECS (space separated roots of the stack to build), ML_STACK
+# (optional: a stack that needs clang, only concretized).
 set -euo pipefail
 
 section() { echo; echo "### $*"; }
 
 section "Tools in the image"
-for exe in python3 gcc g++ gfortran ld ar git curl gpg aws make tar xz zstd unzip patch patchelf file; do
+for exe in python3 gcc g++ gfortran clang clang++ ld.lld ld ar git curl gpg aws make tar xz zstd unzip patch patchelf file; do
   printf '%-10s %s\n' "$exe" "$(command -v "$exe")"
 done
 gcc --version | head -n1
@@ -25,6 +26,12 @@ curl --version | head -n1
 
 workdir=$(mktemp -d)
 cd "$workdir"
+
+section "clang uses Spack's gcc@14 toolchain (there is no system gcc)"
+clang --version | head -n1
+clang++ -v -fsyntax-only -x c++ /dev/null 2>&1 | grep 'Selected GCC installation'
+printf '#include <iostream>\nint main() { std::cout << "hello from clang++" << std::endl; }\n' > hello.cpp
+clang++ -O2 hello.cpp -o hello && ./hello
 
 section "Check out spack-packages and the Spack commit its CI uses"
 git init -q packages
@@ -60,6 +67,8 @@ if [ -d "$SPACK_USER_CACHE_PATH/bootstrap/store" ]; then
   exit 1
 fi
 echo "OK: nothing bootstrapped"
+echo "compilers used:"
+spack --color=never find -c --format '{compiler.name}@{compiler.version}' | grep -v '^==>' | sort | uniq -c
 
 section "Build: ${BUILD_SPECS}"
 # Like build jobs: padded install tree plus the relocation test projection.
@@ -70,6 +79,15 @@ done
 spack install --fail-fast --no-check-signature $BUILD_SPECS
 spack find -lp $BUILD_SPECS
 spack env deactivate
+
+if [ -n "${ML_STACK:-}" ]; then
+  section "Generate: concretize $ML_STACK (needs %c,cxx=llvm)"
+  start=$(date +%s)
+  spack -e "$workdir/packages/stacks/$ML_STACK" concretize -j 4 > "$workdir/ml-concretize.log" 2>&1 \
+    || { tail -n 60 "$workdir/ml-concretize.log"; exit 1; }
+  echo "concretized in $(( $(date +%s) - start ))s"
+  spack --color=never -e "$workdir/packages/stacks/$ML_STACK" find -c --format '{name}@{version} %{compiler.name}@{compiler.version}' py-jaxlib py-tensorflow cuda | sort -u
+fi
 
 section "Outputs do not need a glibc newer than 2.28"
 newest=$(find /home/software/spack -type f \( -name '*.so*' -o -perm -u+x \) -exec sh -c 'file -b "$1" | grep -q ELF && objdump -T "$1" 2>/dev/null' _ {} \; \
