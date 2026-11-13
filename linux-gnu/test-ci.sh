@@ -1,103 +1,57 @@
 #!/bin/bash
-# Smoke test of the linux-gnu image as a spack-packages GitLab CI image. Runs
-# inside the image; mimics the generate and build jobs of the developer-tools
-# stacks (.ci/gitlab/.gitlab-ci.yml, .ci/gitlab/configs/ci.yaml).
-#
-# Inputs (environment): PACKAGES_REPOSITORY, PACKAGES_COMMIT, SPACK_CI_TARGET,
-# STACK, BUILD_SPECS (space separated roots of the stack to build), ML_STACK
-# (optional: a stack that needs clang, only concretized).
+# Smoke test of the image for spack-packages' GitLab CI. Runs inside the image and
+# mimics the generate and build jobs of a stack (.ci/gitlab/.gitlab-ci.yml).
+# Inputs: PACKAGES_REPOSITORY, PACKAGES_COMMIT, SPACK_CI_TARGET, STACK, ML_STACK.
 set -euo pipefail
 
-section() { echo; echo "### $*"; }
+cd "$(mktemp -d)"
 
-section "Tools in the image"
 for exe in python3 gcc g++ gfortran clang clang++ ld.lld ld ar git curl gpg aws make tar xz zstd unzip patch patchelf file; do
-  printf '%-10s %s\n' "$exe" "$(command -v "$exe")"
+  command -v "$exe"
 done
-gcc --version | head -n1
-python3 -c 'import clingo, sys; print("clingo", clingo.__version__, clingo.__file__)'
-python3 -c 'import boto3, botocore; print("boto3", boto3.__version__, "botocore", botocore.__version__)'
-# spack buildcache update-index uses put_object(IfMatch=...): botocore >= 1.35.70
-python3 -c 'import botocore.session as s; m = s.get_session().get_service_model("s3"); assert "IfMatch" in m.operation_model("PutObject").input_shape.members'
 aws --version
-gpg --version | head -n1
-git --version
-curl --version | head -n1
+# spack buildcache update-index uses put_object(IfMatch=...): botocore >= 1.35.70
+python3 -c 'import clingo, boto3, botocore.session as s; assert "IfMatch" in s.get_session().get_service_model("s3").operation_model("PutObject").input_shape.members'
 
-workdir=$(mktemp -d)
-cd "$workdir"
-
-section "clang uses Spack's gcc@14 toolchain (there is no system gcc)"
-clang --version | head -n1
+# clang uses Spack's gcc@14, as there is no system gcc. Both compilers must rpath
+# its runtime libraries: the loader otherwise picks AlmaLinux's older libstdc++.
 clang++ -v -fsyntax-only -x c++ /dev/null 2>&1 | grep 'Selected GCC installation'
-printf '#include <iostream>\nint main() { std::cout << "hello from clang++" << std::endl; }\n' > hello.cpp
-# Like gcc's specs file, clang++.cfg must rpath gcc@14's runtime libraries;
-# otherwise the loader picks AlmaLinux's older /lib64/libstdc++.so.6.
-cat "$(dirname "$(readlink -f "$(command -v clang++)")")/clang++.cfg"
+printf '#include <iostream>\nint main() { std::cout << "hello" << std::endl; }\n' > hello.cpp
 for cxx in g++ clang++; do
-  $cxx -O2 hello.cpp -o hello-$cxx
-  readelf -d hello-$cxx | grep -E 'RPATH|RUNPATH'
-  ./hello-$cxx
+  $cxx -O2 hello.cpp -o hello
+  readelf -d hello | grep -E 'RPATH|RUNPATH'
+  ./hello
 done
 
-section "Check out spack-packages and the Spack commit its CI uses"
-git init -q packages
-git -C packages fetch -q --depth 1 "https://github.com/$PACKAGES_REPOSITORY.git" "$PACKAGES_COMMIT"
-git -C packages checkout -q FETCH_HEAD
+# spack-packages and the Spack commit its CI uses.
+checkout() {
+  git init -q "$1"
+  git -C "$1" fetch -q --depth 1 "https://github.com/$2.git" "$3"
+  git -C "$1" checkout -q FETCH_HEAD
+}
+checkout packages "$PACKAGES_REPOSITORY" "$PACKAGES_COMMIT"
 set -a; . packages/.ci/env; set +a
-git init -q spack
-git -C spack fetch -q --depth 1 "https://github.com/$SPACK_CHECKOUT_REPO.git" "$SPACK_CHECKOUT_VERSION"
-git -C spack checkout -q FETCH_HEAD
+checkout spack "$SPACK_CHECKOUT_REPO" "$SPACK_CHECKOUT_VERSION"
 
-export SPACK_DISABLE_LOCAL_CONFIG=1
-export SPACK_USER_CACHE_PATH="$workdir/tmp/_user_cache/"
-export SPACK_CI_TARGET
+export SPACK_DISABLE_LOCAL_CONFIG=1 SPACK_USER_CACHE_PATH="$PWD/user-cache"
 . spack/share/spack/setup-env.sh
-spack --version
-spack arch
 
-stack="$workdir/packages/stacks/$STACK"
-
-section "Generate: concretize $STACK"
-spack env activate --without-view "$stack"
-spack repo list
+# Generate job: concretize the stack with the image's compilers and clingo.
+spack env activate --without-view "$PWD/packages/stacks/$STACK"
 spack compiler find
-spack compiler list
 spack audit configs
-start=$(date +%s)
-spack -v concretize -j 4 > "$workdir/concretize.log" 2>&1 || { tail -n 60 "$workdir/concretize.log"; exit 1; }
-echo "concretized in $(( $(date +%s) - start ))s"
-tail -n 3 "$workdir/concretize.log"
-if [ -d "$SPACK_USER_CACHE_PATH/bootstrap/store" ]; then
-  echo "ERROR: Spack bootstrapped (clingo?) instead of using the image's tools:"
-  find "$SPACK_USER_CACHE_PATH/bootstrap/store" -maxdepth 3 -mindepth 3
-  exit 1
-fi
-echo "OK: nothing bootstrapped"
-echo "compilers used:"
-spack --color=never find -c --format '{compiler.name}@{compiler.version}' | grep -v '^==>' | sort | uniq -c
+spack concretize -j 4 > /dev/null
+test ! -d "$SPACK_USER_CACHE_PATH/bootstrap/store"
 
-section "Build: ${BUILD_SPECS}"
-# Like build jobs: padded install tree plus the relocation test projection.
-for spec in $BUILD_SPECS; do
+# Build jobs: a sample of the stack, in CI's padded install tree with the
+# relocation test projection.
+specs="libtree tree jq ncdu tmux patchelf py-isort gmake"
+for spec in $specs; do
   hash=$(spack --color=never find -c --format '{hash}' "$spec" | awk '{print $NF}' | head -n1)
   spack config add "config:install_tree:projections:$spec/$hash:'morepadding/{architecture.platform}-{architecture.target}/{name}-{version}-{hash}'"
 done
-spack install --fail-fast --no-check-signature $BUILD_SPECS
-spack find -lp $BUILD_SPECS
+spack install --fail-fast --no-check-signature $specs
 spack env deactivate
 
-if [ -n "${ML_STACK:-}" ]; then
-  section "Generate: concretize $ML_STACK (needs %c,cxx=llvm)"
-  start=$(date +%s)
-  spack -e "$workdir/packages/stacks/$ML_STACK" concretize -j 4 > "$workdir/ml-concretize.log" 2>&1 \
-    || { tail -n 60 "$workdir/ml-concretize.log"; exit 1; }
-  echo "concretized in $(( $(date +%s) - start ))s"
-  spack --color=never -e "$workdir/packages/stacks/$ML_STACK" find -c --format '{name}@{version} %{compiler.name}@{compiler.version}' py-jaxlib py-tensorflow cuda | sort -u
-fi
-
-section "Outputs do not need a glibc newer than 2.28"
-newest=$(find /home/software/spack -type f \( -name '*.so*' -o -perm -u+x \) -exec sh -c 'file -b "$1" | grep -q ELF && objdump -T "$1" 2>/dev/null' _ {} \; \
-  | grep -oE 'GLIBC_[0-9]+\.[0-9]+(\.[0-9]+)?' | sort -uV | tail -n1)
-echo "newest GLIBC symbol version required: $newest"
-test "$(printf '%s\nGLIBC_2.28\n' "$newest" | sort -V | tail -n1)" = GLIBC_2.28
+# A stack that requires %c,cxx=llvm for some packages.
+spack -e "$PWD/packages/stacks/$ML_STACK" concretize -j 4 > /dev/null

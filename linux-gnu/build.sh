@@ -1,41 +1,30 @@
 #!/bin/bash
-# Runs inside builder.dockerfile; see .github/workflows/linux-gnu.yml.
-#
-# Inputs (environment): REGISTRY, TAG, ARCH, TARGET, BASE, GITHUB_ACTOR, GITHUB_TOKEN.
-# Mounts: /spack, /spack-packages, /env (spack.yaml, writable), /out.
+# Runs in the base image, see .github/workflows/linux-gnu.yml. Inputs: REGISTRY,
+# TAG, TARGET, BASE, GITHUB_ACTOR, GITHUB_TOKEN; mounts: /spack, /spack-packages.
 set -euo pipefail
 
-export PATH=/spack/bin:$PATH
-export SPACK_DISABLE_LOCAL_CONFIG=1
-export SPACK_USER_CACHE_PATH=/tmp/spack-cache
+# AlmaLinux's gcc 8.5 and what Spack needs to run. libstdc++-static (for gcc's
+# bootstrap) is in powertools.
+dnf install -y --setopt=install_weak_deps=False --enablerepo=powertools \
+  binutils bzip2 diffutils file findutils gcc gcc-c++ git gzip libstdc++-static \
+  make patch python3 tar unzip xz
 
-cache="oci://$REGISTRY/linux-gnu-cache"
+mkdir /env
+cp "$(dirname "$0")/spack.yaml" /env
+export PATH=/spack/bin:$PATH SPACK_ENV=/env
 
-# Use the pinned spack-packages checkout instead of cloning builtin.
-spack -e /env config add "repos:builtin:/spack-packages/repos/spack_repo/builtin"
-spack -e /env repo list
 # Generic microarchitecture, not the runner's (e.g. neoverse_n2 / zen4).
-spack -e /env config add "packages:all:require:[target=$TARGET]"
-spack -e /env mirror add --unsigned --autopush \
+spack config add "packages:all:require:[target=$TARGET]"
+# Packages are pushed as soon as they are built, so a re-run resumes.
+spack mirror add --unsigned --autopush \
   --oci-username-variable GITHUB_ACTOR --oci-password-variable GITHUB_TOKEN \
-  cache "$cache"
+  cache "oci://$REGISTRY/linux-gnu-cache"
 
-# Packages are autopushed as they are built; keep the index current even if
-# the build fails, so the cache can be browsed (installs do not need it).
-trap 'spack -e /env buildcache update-index cache || true' EXIT
+spack concretize
+# llvm has its own `require`, which takes precedence over the one for `all`.
+test "$(spack --color=never find -c --format '{target}' | awk '!/^==>/ && NF {print $NF}' | sort -u)" = "$TARGET"
+spack install --fail-fast
 
-spack -e /env concretize --fresh 2>&1 | tee /out/concretize.txt
-targets=$(spack --color=never -e /env find -c --format '{target}' | grep -v '^==>' | awk '{print $NF}' | sort -u | xargs)
-echo "targets: $targets"
-test "$targets" = "$TARGET"
-spack -e /env find -c --show-full-compiler -L > /out/specs.txt || true
-
-# Installs pull what is already in the cache and push what they build.
-spack -e /env install --fail-fast -j "$(nproc)"
-
-# Tag one image with every root and its runtime closure, on top of the base, and
-# the environment view as the last layer. The tag is created in the cache's
-# repository: $REGISTRY/linux-gnu-cache:$TAG-$ARCH.
-spack -e /env buildcache push --unsigned --update-index --without-build-dependencies \
-  --base-image "$BASE-$ARCH" \
-  --tag "$TAG-$ARCH" --env-view cache
+# The image: the base, a layer per package in the runtime closure of the roots,
+# and the view. It is tagged in the cache's repository.
+spack buildcache push --without-build-dependencies --base-image "$BASE" --tag "$TAG" --env-view cache

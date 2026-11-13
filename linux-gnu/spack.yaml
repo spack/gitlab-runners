@@ -1,19 +1,9 @@
-# Tools for Spack's GitLab CI on linux, built inside builder.dockerfile and
-# pushed as an image on top of base.dockerfile (see README.md).
-#
-# Everything except llvm, including gcc@14, is built with AlmaLinux 8's gcc 8.5:
-# the tools only run Spack and its helpers, and CI builds with gcc@14 and its
-# own gcc-runtime. Not building the tools with gcc@14 keeps them off the
-# critical path of the (slow) gcc build and avoids rebuilding all of them on gcc
-# bumps.
-#
-# llvm is built with gcc@14 in a second group: llvm writes `--gcc-install-dir`
-# of the compiler that built it into clang.cfg, and the image has no system gcc,
-# only Spack's gcc@14. Spack only builds with external or concrete compilers,
-# hence the group that `needs` the first one.
+# Tools for Spack's GitLab CI on linux. They are built with AlmaLinux 8's gcc 8.5,
+# so they neither wait for the gcc@14 build nor get rebuilt on gcc bumps. Only
+# llvm is built with gcc@14, in a second group: clang.cfg refers to the gcc that
+# built llvm, and the image has no system gcc.
 spack:
-  # Added to the image as its last layer by `spack buildcache push --env-view`:
-  # PATH etc. in the image refer to the view instead of to every package.
+  # Last layer of the image; PATH etc. refer to it (buildcache push --env-view).
   view: /opt/view
 
   specs:
@@ -54,8 +44,7 @@ spack:
   - group: llvm
     needs: [tools]
     specs:
-    # +link_llvm_dylib: tools link libLLVM.so/libclang-cpp.so instead of each
-    # statically linking LLVM (3.4 GB compressed layer otherwise).
+    # ~link_llvm_dylib statically links LLVM into every tool: a 3.4 GB layer.
     - llvm@23 +clang +lld +link_llvm_dylib ~lldb ~libomptarget ~offload ~python
     override:
       packages:
@@ -63,8 +52,10 @@ spack:
           require: ["%c,cxx=gcc@14"]
 
   concretizer:
-    unify: true
     reuse: false
+
+  repos:
+    builtin: /spack-packages/repos/spack_repo/builtin
 
   config:
     install_tree:
