@@ -7,6 +7,7 @@ name: linux-gnu image
 on:
   workflow_dispatch:
   push:
+    branches: [main]
     paths:
     - linux-gnu/**
     - .github/workflows/linux-gnu.yml
