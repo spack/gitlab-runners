@@ -53,7 +53,7 @@ ENV VIRTUAL_ENV=/opt/venv
 RUN python3 -m venv $VIRTUAL_ENV
 ENV PATH="$VIRTUAL_ENV/bin:$PATH"
 RUN python3 -m pip install --upgrade pip setuptools wheel \
- && python3 -m pip install gnureadline boto3 pyyaml pytz minio requests clingo \
+ && python3 -m pip install gnureadline boto3 pyyaml pytz minio requests \
  && rm -rf ~/.cache
 
 # Install AWS CLI v2 (used improve performance of `spack buildcache update-index`).
@@ -77,6 +77,11 @@ RUN AWSCLI_ZIP="awscli-exe-linux-$(uname -m).zip" \
   && /tmp/aws/install \
   && rm -rf /tmp/awscliv2.zip /tmp/awscliv2.zip.sig /tmp/aws "$GNUPGHOME" \
   && aws --version
+
+# Spack's optimized clingo (faster than the PyPI wheel); SPACK_COMMIT is v1.2.2.
+ARG SPACK_COMMIT=3e19345b6e12f5ff1b874f4059622fc6a1fd804a
+COPY scripts/bootstrap-clingo.sh /tmp/bootstrap-clingo.sh
+RUN /tmp/bootstrap-clingo.sh "${SPACK_COMMIT}" && rm /tmp/bootstrap-clingo.sh
 
 CMD ["/bin/bash"]
 
