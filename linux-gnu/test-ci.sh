@@ -31,7 +31,11 @@ section "clang uses Spack's gcc@14 toolchain (there is no system gcc)"
 clang --version | head -n1
 clang++ -v -fsyntax-only -x c++ /dev/null 2>&1 | grep 'Selected GCC installation'
 printf '#include <iostream>\nint main() { std::cout << "hello from clang++" << std::endl; }\n' > hello.cpp
-clang++ -O2 hello.cpp -o hello && ./hello
+# RPATH to gcc@14's libstdc++ like Spack's compiler wrapper does; without it the
+# loader picks AlmaLinux's older /lib64/libstdc++.so.6 (same for plain g++).
+libstdcxx_dir=$(dirname "$(clang++ -print-file-name=libstdc++.so)")
+echo "libstdc++: $libstdcxx_dir"
+clang++ -O2 hello.cpp -o hello -Wl,-rpath,"$libstdcxx_dir" && ./hello
 
 section "Check out spack-packages and the Spack commit its CI uses"
 git init -q packages
