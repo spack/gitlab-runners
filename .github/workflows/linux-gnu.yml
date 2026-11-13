@@ -4,8 +4,9 @@ name: linux-gnu image
 # AlmaLinux 8 builder container. Every installed package is pushed to an OCI
 # build cache as soon as it is built (autopush), so a re-run of a timed-out or
 # failed job resumes where it left off. The image itself is assembled by
-# `spack buildcache push --base-image ... --tag ...`: the runtime base plus one
-# layer per Spack package, with PATH etc. set for the root specs.
+# `spack buildcache push --base-image ... --tag ... --env-view`: the runtime
+# base, one layer per Spack package, and the environment view in /opt/view, with
+# PATH etc. set for the view.
 
 on:
   workflow_dispatch:

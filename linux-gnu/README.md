@@ -13,9 +13,9 @@ from a Spack environment on top of a minimal AlmaLinux 8 base.
   llvm@23 (clang, for stacks that require `%c,cxx=llvm`), which a second spec
   group builds with the Spack-built gcc@14 so that clang uses its libstdc++.
 - [`build.sh`](build.sh): concretizes and installs the environment in the
-  builder, then runs `spack buildcache push --base-image <base> --tag <tag>`,
-  which produces the image: the base plus one layer per package, with `PATH` and
-  friends set for the root specs.
+  builder, then runs `spack buildcache push --base-image <base> --tag <tag>
+  --env-view`, which produces the image: the base, one layer per package, and
+  the environment view in `/opt/view`, with `PATH` and friends set for the view.
 - [`test-ci.sh`](test-ci.sh): checks clang, then runs in the image like spack-packages CI does:
   concretizes a developer-tools stack (generate job) and builds part of it under
   CI's padded install tree (build jobs).
