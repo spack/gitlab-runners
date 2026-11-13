@@ -1,8 +1,8 @@
-#!/bin/bash
+#!/bin/sh
 # Smoke test of the image for spack-packages' GitLab CI. Runs inside the image and
 # mimics the generate and build jobs of a stack (.ci/gitlab/.gitlab-ci.yml).
 # Inputs: PACKAGES_REPOSITORY, PACKAGES_COMMIT, SPACK_CI_TARGET, STACK, ML_STACK.
-set -euo pipefail
+set -eu
 
 cd "$(mktemp -d)"
 
@@ -33,11 +33,10 @@ checkout packages "$PACKAGES_REPOSITORY" "$PACKAGES_COMMIT"
 set -a; . packages/.ci/env; set +a
 checkout spack "$SPACK_CHECKOUT_REPO" "$SPACK_CHECKOUT_VERSION"
 
-export SPACK_DISABLE_LOCAL_CONFIG=1 SPACK_USER_CACHE_PATH="$PWD/user-cache"
-. spack/share/spack/setup-env.sh
+export PATH="$PWD/spack/bin:$PATH" SPACK_DISABLE_LOCAL_CONFIG=1 SPACK_USER_CACHE_PATH="$PWD/user-cache"
 
 # Generate job: concretize the stack with the image's compilers and clingo.
-spack env activate --without-view "$PWD/packages/stacks/$STACK"
+export SPACK_ENV="$PWD/packages/stacks/$STACK"
 spack compiler find
 spack audit configs
 spack concretize -j 4 > /dev/null
@@ -51,7 +50,6 @@ for spec in $specs; do
   spack config add "config:install_tree:projections:$spec/$hash:'morepadding/{architecture.platform}-{architecture.target}/{name}-{version}-{hash}'"
 done
 spack install --fail-fast --no-check-signature $specs
-spack env deactivate
 
 # A stack that requires %c,cxx=llvm for some packages.
-spack -e "$PWD/packages/stacks/$ML_STACK" concretize -j 4 > /dev/null
+SPACK_ENV="$PWD/packages/stacks/$ML_STACK" spack concretize -j 4 > /dev/null
