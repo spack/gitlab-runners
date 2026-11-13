@@ -29,8 +29,9 @@ env:
   SPACK_REPOSITORY: haampie-llms/spack
   SPACK_COMMIT: 11b8cae1bab08a94c39d180d68cd469d5f3c08ac
   # haampie-llms/spack-packages linux-gnu-ci-image: develop 8933fbb + version bumps
+  # + llvm: clang.cfg rpath fix, no libexec/llvm copy
   PACKAGES_REPOSITORY: haampie-llms/spack-packages
-  PACKAGES_COMMIT: e0051ddce1d5ba25c74844143f20d63656c08158
+  PACKAGES_COMMIT: 2995557483bcb25530dc419800f52333adb445c2
   REGISTRY: ghcr.io/${{ github.repository_owner }}
 
 jobs:
