@@ -25,9 +25,9 @@ concurrency:
 env:
   # Pinned Spack and package repository. Point these at forks to build with
   # unmerged fixes.
-  # haampie-llms/spack yaml-keep-trailing-colon-in-values: develop e9a7922 + YAML fix
+  # haampie-llms/spack yaml-keep-trailing-colon-in-values: develop e05599c + YAML fix
   SPACK_REPOSITORY: haampie-llms/spack
-  SPACK_COMMIT: 1cf09a150e070a2423a85aee8846174dc15727fb
+  SPACK_COMMIT: 11b8cae1bab08a94c39d180d68cd469d5f3c08ac
   # haampie-llms/spack-packages linux-gnu-ci-image: develop 8933fbb + version bumps
   PACKAGES_REPOSITORY: haampie-llms/spack-packages
   PACKAGES_COMMIT: e0051ddce1d5ba25c74844143f20d63656c08158
