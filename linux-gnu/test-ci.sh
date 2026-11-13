@@ -64,7 +64,7 @@ echo "OK: nothing bootstrapped"
 section "Build: ${BUILD_SPECS}"
 # Like build jobs: padded install tree plus the relocation test projection.
 for spec in $BUILD_SPECS; do
-  hash=$(spack find -c --format '{hash}' "$spec" | head -n1)
+  hash=$(spack --color=never find -c --format '{hash}' "$spec" | awk '{print $NF}' | head -n1)
   spack config add "config:install_tree:projections:$spec/$hash:'morepadding/{architecture.platform}-{architecture.target}/{name}-{version}-{hash}'"
 done
 spack install --fail-fast --no-check-signature $BUILD_SPECS
