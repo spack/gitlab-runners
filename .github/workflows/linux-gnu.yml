@@ -25,9 +25,10 @@ concurrency:
 env:
   # Pinned Spack and package repository. Point these at forks to build with
   # unmerged fixes.
-  # haampie-llms/spack yaml-keep-trailing-colon-in-values: develop e05599c + YAML fix
+  # haampie-llms/spack linux-gnu-ci-image: develop ab3f3ac + buildcache push --env-view
+  # (spack/spack#53361)
   SPACK_REPOSITORY: haampie-llms/spack
-  SPACK_COMMIT: 11b8cae1bab08a94c39d180d68cd469d5f3c08ac
+  SPACK_COMMIT: 28e95a43e1407c9448021ab71639829cdfc90252
   # haampie-llms/spack-packages linux-gnu-ci-image: develop 8933fbb + version bumps
   # + llvm: clang.cfg rpath, no libexec/llvm copy; py-libclang: allow newer llvm
   PACKAGES_REPOSITORY: haampie-llms/spack-packages
