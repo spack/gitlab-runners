@@ -24,8 +24,8 @@ env:
   # Pinned Spack and spack-packages; forks, to build with unmerged fixes.
   SPACK_REPOSITORY: haampie-llms/spack
   SPACK_COMMIT: 28e95a43e1407c9448021ab71639829cdfc90252  # spack/spack#53361
-  PACKAGES_REPOSITORY: haampie-llms/spack-packages
-  PACKAGES_COMMIT: 78fee03288bd14eff22a6d8dd10a2a9c3efdd00d  # version bumps, llvm and py-libclang fixes
+  PACKAGES_REPOSITORY: spack/spack-packages
+  PACKAGES_COMMIT: 167efc9375a9afb90043419e3fef7d86caaae694
   REGISTRY: ghcr.io/${{ github.repository_owner }}
   TAG: ${{ github.event_name == 'pull_request' && format('pr{0}', github.event.number) || github.ref_name }}
 
