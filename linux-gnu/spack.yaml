@@ -1,7 +1,5 @@
-# Tools for Spack's GitLab CI on linux. They are built with AlmaLinux 8's gcc 8.5,
-# so they neither wait for the gcc@14 build nor get rebuilt on gcc bumps. Only
-# llvm is built with gcc@14, in a second group: clang.cfg refers to the gcc that
-# built llvm, and the image has no system gcc.
+# Tools for Spack's GitLab CI on linux. gcc@14 is built with AlmaLinux 8's gcc 8.5,
+# everything else with gcc@14 (its binutils compress debug info by default).
 spack:
   # Last layer of the image; PATH etc. refer to it (buildcache push --env-view).
   # The compilers get their own prefix: `spack compiler find` would otherwise
@@ -10,16 +8,26 @@ spack:
   view:
     default:
       root: /opt/view
+      link: run
       projections:
         gcc: gcc
         llvm: llvm
 
   specs:
-  - group: tools
+  - group: gcc
     specs:
-    # The compiler CI builds with.
     - gcc@14 +binutils +profiled build_type=Release languages=c,c++,fortran
     - binutils +ld +gas +plugins ~libiberty
+    override:
+      packages:
+        c:
+          require: [gcc@8.5.0]
+        cxx:
+          require: [gcc@8.5.0]
+
+  - group: tools
+    needs: [gcc]
+    specs:
     # Spack's own dependencies and CI tooling.
     - awscli-v2
     - bzip2
@@ -41,23 +49,16 @@ spack:
     - vim
     - xz
     - zstd
+    # clang, for stacks that require `%c,cxx=llvm` (py-jaxlib, py-tensorflow).
+    # ~link_llvm_dylib statically links LLVM into every tool: a 3.4 GB layer.
+    - llvm@23 +clang +lld +link_llvm_dylib ~lldb ~libomptarget ~offload ~python
+    # Not `require`: that would also apply to gcc@14 itself.
     override:
       packages:
         c:
-          require: [gcc@8.5.0]
+          prefer: [gcc@14]
         cxx:
-          require: [gcc@8.5.0]
-
-  # clang, for stacks that require `%c,cxx=llvm` (py-jaxlib, py-tensorflow).
-  - group: llvm
-    needs: [tools]
-    specs:
-    # ~link_llvm_dylib statically links LLVM into every tool: a 3.4 GB layer.
-    - llvm@23 +clang +lld +link_llvm_dylib ~lldb ~libomptarget ~offload ~python
-    override:
-      packages:
-        llvm:
-          require: ["%c,cxx=gcc@14"]
+          prefer: [gcc@14]
 
   concretizer:
     reuse: false

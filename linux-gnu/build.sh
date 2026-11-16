@@ -21,7 +21,7 @@ spack mirror add --unsigned --autopush \
   cache "oci://$REGISTRY/linux-gnu-cache"
 
 spack concretize
-# llvm has its own `require`, which takes precedence over the one for `all`.
+# A package's own `require` would take precedence over the one for `all`.
 test "$(spack --color=never find -c --format '{target}' | awk '!/^==>/ && NF {print $NF}' | sort -u)" = "$TARGET"
 spack install --fail-fast
 
