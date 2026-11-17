@@ -25,7 +25,7 @@ env:
   SPACK_REPOSITORY: haampie-llms/spack
   SPACK_COMMIT: 28e95a43e1407c9448021ab71639829cdfc90252  # spack/spack#53361
   PACKAGES_REPOSITORY: spack/spack-packages
-  PACKAGES_COMMIT: 167efc9375a9afb90043419e3fef7d86caaae694
+  PACKAGES_COMMIT: ae70016a8d8a009525255a37ec2ad770d443d343
   REGISTRY: ghcr.io/${{ github.repository_owner }}
   TAG: ${{ github.event_name == 'pull_request' && format('pr{0}', github.event.number) || github.ref_name }}
 
