@@ -21,9 +21,8 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  # Pinned Spack and spack-packages; forks, to build with unmerged fixes.
-  SPACK_REPOSITORY: haampie-llms/spack
-  SPACK_COMMIT: 28e95a43e1407c9448021ab71639829cdfc90252  # spack/spack#53361
+  SPACK_REPOSITORY: spack/spack
+  SPACK_COMMIT: 7188f9d6e0f345d023d1f947401eeaaf5ced9f5f
   PACKAGES_REPOSITORY: spack/spack-packages
   PACKAGES_COMMIT: ae70016a8d8a009525255a37ec2ad770d443d343
   REGISTRY: ghcr.io/${{ github.repository_owner }}
