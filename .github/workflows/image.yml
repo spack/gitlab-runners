@@ -3,7 +3,8 @@ name: Image
 # Builds ghcr.io/spack/<image> from a Dockerfile, natively on each architecture,
 # and combines the per-architecture images into a multi-arch image. Tags follow
 # the event: nightly (schedule), pr-<number>, the branch name, or the release
-# tag and latest.
+# tag and latest. Pull requests from forks get a read-only token, so their
+# images are built, but not pushed.
 
 on:
   workflow_call:
@@ -26,6 +27,7 @@ permissions: {}
 env:
   IMAGE: ghcr.io/${{ github.repository_owner }}/${{ inputs.image }}
   TAG: ${{ github.event_name == 'schedule' && 'nightly' || github.event_name == 'pull_request' && format('pr-{0}', github.event.number) || github.ref_name }}
+  PUSH: ${{ github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository }}
 
 jobs:
   build:
@@ -52,8 +54,11 @@ jobs:
         DOCKERFILE: ${{ inputs.dockerfile }}
         ARCH: ${{ matrix.arch }}
       run: |
-        echo "$GITHUB_TOKEN" | docker login ghcr.io -u "$GITHUB_ACTOR" --password-stdin
-        docker buildx build --push --platform "linux/$ARCH" --file "$DOCKERFILE" \
+        if [ "$PUSH" = true ]; then
+          echo "$GITHUB_TOKEN" | docker login ghcr.io -u "$GITHUB_ACTOR" --password-stdin
+          set -- --push
+        fi
+        docker buildx build "$@" --platform "linux/$ARCH" --file "$DOCKERFILE" \
           --tag "$IMAGE:$TAG-$ARCH" \
           --label "org.opencontainers.image.source=$GITHUB_SERVER_URL/$GITHUB_REPOSITORY" \
           --label "org.opencontainers.image.revision=$GITHUB_SHA" \
@@ -64,6 +69,8 @@ jobs:
 
   image:
     needs: build
+    # Same condition as PUSH, which is not available here.
+    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
     runs-on: ubuntu-24.04
     permissions:
       packages: write
