@@ -1,8 +1,13 @@
 #!/bin/sh
 # Smoke test of the image for spack-packages' GitLab CI. Runs inside the image and
 # mimics the generate and build jobs of a stack (.ci/gitlab/.gitlab-ci.yml).
-# Inputs: PACKAGES_REPOSITORY, PACKAGES_COMMIT, SPACK_CI_TARGET, STACK, ML_STACK.
+# Inputs: PACKAGES_REPOSITORY, PACKAGES_COMMIT, TARGET (x86_64_v3 or aarch64).
 set -eu
+
+# The stacks' configs depend on SPACK_CI_TARGET (.ci/gitlab/include.yaml).
+export SPACK_CI_TARGET="$TARGET"
+STACK="developer-tools-$TARGET-linux-gnu"
+ML_STACK="ml-linux-$(uname -m)"
 
 cd "$(mktemp -d)"
 

@@ -61,7 +61,7 @@ RUN python3 -m pip install --upgrade pip setuptools wheel \
 # AWS CLI Team public key, used to verify the installer signature.
 # Source: https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html
 # Fingerprint: FB5D B77F D5C1 18B8 0511  ADA8 A631 0ACC 4672 475C (expires 2027-07-01)
-COPY keys/aws-cli.asc /usr/share/keyrings/aws-cli.asc
+COPY aws-cli.asc /usr/share/keyrings/aws-cli.asc
 
 # The signature must be valid AND made by the expected key: gpg's status output
 # is checked for a VALIDSIG line whose primary-key fingerprint matches.

@@ -1,46 +1,93 @@
 name: Containers
+
+# Builds Dockerfiles/<image>/ natively on each architecture and pushes it as
+# ghcr.io/<owner>/<image>:<tag>, where the tag is pr-<number>, the branch name,
+# or the release tag and latest. Pull requests from forks get a read-only
+# token, so their images are built, but not pushed.
+
 on:
-  # This Workflow can be triggered manually
   workflow_dispatch:
-  # Build container images on a daily schedule
-  schedule:
-    - cron: '11 5 * * *'
   push:
-    branches:
-    - main
+    branches: [main]
   pull_request:
-    branches:
-      - main
-  # Let's also build & tag Spack containers on releases.
   release:
     types: [published]
 
 permissions: {}
 
 concurrency:
-  group: ci-${{github.ref}}-${{github.event.pull_request.number || github.run_number}}
+  group: containers-${{ github.ref }}
   cancel-in-progress: true
 
-# One job per image, so that a failing image does not hold back the others.
-jobs:
-  ubuntu-24_04:
-    name: ubuntu-24.04
-    uses: $/.github/workflows/image.yml
-    permissions:
-      contents: read
-      packages: write
-    with:
-      image: ubuntu-24.04
-      dockerfile: Dockerfiles/ubuntu-24.04.dockerfile
-      archs: '["amd64", "arm64"]'
+env:
+  REGISTRY: ghcr.io/${{ github.repository_owner }}
+  TAG: ${{ github.event_name == 'pull_request' && format('pr-{0}', github.event.number) || github.ref_name }}
+  PUSH: ${{ github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository }}
 
-  tutorial-ubuntu-26_04:
-    name: tutorial-ubuntu-26.04
-    uses: $/.github/workflows/image.yml
+jobs:
+  build:
+    name: ${{ matrix.image }} / build (${{ matrix.arch }})
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 360
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+        - {image: ubuntu-24.04, arch: amd64, runner: ubuntu-24.04}
+        - {image: ubuntu-24.04, arch: arm64, runner: ubuntu-24.04-arm}
+        - {image: tutorial-ubuntu-26.04, arch: amd64, runner: ubuntu-24.04}
     permissions:
       contents: read
       packages: write
-    with:
-      image: tutorial-ubuntu-26.04
-      dockerfile: Dockerfiles/tutorial-ubuntu-26.04/Dockerfile
-      archs: '["amd64"]'
+    env:
+      IMAGE: ${{ matrix.image }}
+      ARCH: ${{ matrix.arch }}
+    steps:
+    - name: Check out
+      run: |
+        git init -q .
+        git fetch -q --depth 1 "$GITHUB_SERVER_URL/$GITHUB_REPOSITORY.git" "$GITHUB_SHA"
+        git checkout -q FETCH_HEAD
+
+    - name: Build and push
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      run: |
+        if [ "$PUSH" = true ]; then
+          echo "$GITHUB_TOKEN" | docker login ghcr.io -u "$GITHUB_ACTOR" --password-stdin
+          set -- --push
+        fi
+        docker buildx build "$@" --platform "linux/$ARCH" --tag "$REGISTRY/$IMAGE:$TAG-$ARCH" \
+          --label "org.opencontainers.image.source=$GITHUB_SERVER_URL/$GITHUB_REPOSITORY" \
+          --label "org.opencontainers.image.revision=$GITHUB_SHA" \
+          --cache-from "$REGISTRY/$IMAGE:$TAG-$ARCH" --cache-from "$REGISTRY/$IMAGE:main" \
+          --cache-to type=inline \
+          "Dockerfiles/$IMAGE"
+
+  image:
+    name: ${{ matrix.image }} / image
+    needs: build
+    # Same condition as PUSH, which is not available here.
+    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-24.04
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+        - {image: ubuntu-24.04, archs: amd64 arm64}
+        - {image: tutorial-ubuntu-26.04, archs: amd64}
+    permissions:
+      packages: write
+    env:
+      IMAGE: ${{ matrix.image }}
+      ARCHS: ${{ matrix.archs }}
+    steps:
+    - name: Multi-arch image
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      run: |
+        echo "$GITHUB_TOKEN" | docker login ghcr.io -u "$GITHUB_ACTOR" --password-stdin
+        set -- -t "$REGISTRY/$IMAGE:$TAG"
+        if [ "$GITHUB_EVENT_NAME" = release ]; then set -- "$@" -t "$REGISTRY/$IMAGE:latest"; fi
+        for arch in $ARCHS; do set -- "$@" "$REGISTRY/$IMAGE:$TAG-$arch"; done
+        docker buildx imagetools create "$@"
