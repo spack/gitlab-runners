@@ -1,0 +1,82 @@
+# Tools for Spack's GitLab CI on linux. gcc@14 is built with AlmaLinux 8's gcc 8.5,
+# everything else with gcc@14 (its binutils compress debug info by default).
+spack:
+  # Last layer of the image; PATH etc. refer to it (buildcache push --env-view).
+  # The compilers get their own prefix: `spack compiler find` would otherwise
+  # register them with the whole view as prefix, and builds would find the
+  # image's tools as dependencies.
+  view:
+    default:
+      root: /opt/view
+      link: run
+      projections:
+        gcc: gcc
+        llvm: llvm
+
+  specs:
+  - group: gcc
+    specs:
+    - gcc@14 +binutils +profiled build_type=Release languages=c,c++,fortran
+    - binutils +ld +gas +plugins ~libiberty
+    override:
+      packages:
+        c:
+          require: [gcc@8.5.0]
+        cxx:
+          require: [gcc@8.5.0]
+
+  - group: tools
+    needs: [gcc]
+    specs:
+    # Spack's own dependencies and CI tooling.
+    - awscli-v2
+    - bzip2
+    - clingo-bootstrap@spack +optimized
+    - curl
+    - file
+    - git
+    - gmake
+    - gnupg
+    - gzip
+    - libtree
+    - lz4
+    - patch
+    - patchelf
+    - py-boto3
+    - python +optimizations
+    - tar
+    - unzip
+    - vim
+    - xz
+    - zstd
+    # clang, for stacks that require `%c,cxx=llvm` (py-jaxlib, py-tensorflow).
+    # ~link_llvm_dylib statically links LLVM into every tool: a 3.4 GB layer.
+    - llvm@23 +clang +lld +link_llvm_dylib ~lldb ~libomptarget ~offload ~python
+    # Not `require`: that would also apply to gcc@14 itself.
+    override:
+      packages:
+        c:
+          prefer: [gcc@14]
+        cxx:
+          prefer: [gcc@14]
+
+  concretizer:
+    reuse: false
+
+  repos:
+    builtin: /spack-packages/repos/spack_repo/builtin
+
+  config:
+    install_tree:
+      root: /opt/spack
+
+  # build.sh adds `packages:all:require:[target=...]` (x86_64_v3 or aarch64).
+  packages:
+    gcc:
+      externals:
+      - spec: gcc@8.5.0 languages:='c,c++'
+        prefix: /usr
+        extra_attributes:
+          compilers:
+            c: /usr/bin/gcc
+            cxx: /usr/bin/g++
