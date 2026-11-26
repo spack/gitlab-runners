@@ -34,14 +34,8 @@ jobs:
       # 2: Platforms to build
       matrix:
         dockerfile: [[e4s-ubuntu-18.04, e4s-ubuntu-18.04.dockerfile, 'linux/amd64,linux/arm64'],
-                     [e4s-ubuntu-20.04, e4s-ubuntu-20.04.dockerfile, 'linux/amd64,linux/arm64'],
-                     [ubuntu-22.04, ubuntu-22.04.dockerfile, 'linux/amd64,linux/arm64'],
                      [ubuntu-24.04, ubuntu-24.04.dockerfile, 'linux/amd64,linux/arm64'],
-                     [linux-ubuntu22.04-x86_64_v2, linux-ubuntu22.04-x86_64_v2/Dockerfile, 'linux/amd64'],
-                     [tutorial-ubuntu-26.04, tutorial-ubuntu-26.04/Dockerfile, 'linux/amd64'],
-                     [e4s-centos-7, e4s-centos-7.dockerfile, 'linux/amd64'],
-                     [e4s-fedora-36, e4s-fedora-36.dockerfile, 'linux/amd64,linux/arm64'],
-                     [pcluster-amazonlinux-2, pcluster-amazonlinux-2/Dockerfile, 'linux/amd64,linux/arm64']]
+                     [tutorial-ubuntu-26.04, tutorial-ubuntu-26.04/Dockerfile, 'linux/amd64']]
     name: Build ${{ matrix.dockerfile[0] }}
     steps:
       - name: Checkout
@@ -80,5 +74,3 @@ jobs:
             ghcr.io/spack/${{ matrix.dockerfile[0] }}:latest
             ${{ steps.meta.outputs.tags }}
           cache-to: type=inline
-          secrets: |
-            "bootstrap_gcc_key=${{ secrets.BOOTSTRAP_GCC_KEY }}"
