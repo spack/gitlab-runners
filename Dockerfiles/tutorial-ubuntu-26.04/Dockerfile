@@ -27,7 +27,7 @@ RUN mkdir spack && \
     cd spack && \
     curl -Lfs https://github.com/spack/spack/archive/525775aa9b3e9500f661508456902c7634c23655.tar.gz | tar -xzf - --strip-components=1 -C .
 
-COPY Dockerfiles/tutorial-ubuntu-26.04/spack.yaml /root/
+COPY spack.yaml /root/
 
 RUN --mount=type=cache,target=/root/.spack/cache \
     spack -e . concretize -f && \
