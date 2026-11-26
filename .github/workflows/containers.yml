@@ -33,8 +33,7 @@ jobs:
       # 1: Dockerfile path
       # 2: Platforms to build
       matrix:
-        dockerfile: [[e4s-ubuntu-18.04, e4s-ubuntu-18.04.dockerfile, 'linux/amd64,linux/arm64'],
-                     [ubuntu-24.04, ubuntu-24.04.dockerfile, 'linux/amd64,linux/arm64'],
+        dockerfile: [[ubuntu-24.04, ubuntu-24.04.dockerfile, 'linux/amd64,linux/arm64'],
                      [tutorial-ubuntu-26.04, tutorial-ubuntu-26.04/Dockerfile, 'linux/amd64']]
     name: Build ${{ matrix.dockerfile[0] }}
     steps:
